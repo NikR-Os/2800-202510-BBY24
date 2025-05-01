@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>My BCIT Project</title>
+    <title>StudyNav - Setting</title>
     <meta name="comp1800 template" content="My 1800 App">
 
     <!-- Required meta tags -->
@@ -35,76 +35,84 @@
 
 <body>
 
-    <!------------------------------>
-    <!-- Your HTML Layout go here -->
-    <!------------------------------>
-    <!-- Stuff for body goes here -->
+  <!------------------------------>
+  <!-- Your HTML Layout go here -->
+  <!------------------------------>
+  <!-- Stuff for body goes here -->
 
-    <nav class="navbar navbar-expand-lg bg-body-tertiary px-5">
-        <div class="container-fluid">
-          <a class="navbar-brand text-success" href="#">
-            <i class="fas fa-map fa-lg mb-4"></i> <!-- Font Awesome Map Icon -->
-            CAMPUS NAV
+  <nav id="navbar" class="navbar navbar-expand-lg bg-body-tertiary px-5">
+    <div class="container-fluid">
+      <a class="navbar-brand text-success" href="#">
+      <i class="fas fa-map fa-lg mb-4"></i> <!-- Font Awesome Map Icon -->
+      STUDY NAV
+      </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav gap-4">
+        <li class="nav-item text-center">
+          <a class="nav-link active text-success" aria-current="page" href="main.html">
+              <i class="fas fa-home fa-lg d-block mb-3"></i> <!-- Icon Above -->
+              HOME
+          </a>
+
+          </li>
+          <li class="nav-item text-center">
+            <a class="nav-link text-sucess" href="#">
+                <i class="fas fa-sign-out-alt fa-lg d-block mb-3"></i> 
+                LOGOUT
             </a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav gap-4">
-              <li class="nav-item text-center">
-                <a class="nav-link active text-success" aria-current="page" href="#">
-                    <i class="fas fa-home fa-lg d-block mb-3"></i> <!-- Icon Above -->
-                    HOME
-                </a>
+            
 
-              </li>
-              <li class="nav-item text-center">
-                <a class="nav-link text-sucess" href="#">
-                    <i class="fas fa-sign-out-alt fa-lg d-block mb-3"></i> 
-                    LOGOUT
-                </a>
-               
+          </li>
+          <li class="nav-item text-center">
+            <a class="nav-link text-succes" href="setting.html">
+                <i class="fas fa-cog fa-lg d-block mb-3"></i> 
+                SETTINGS
+            </a>
 
-              </li>
-              <li class="nav-item text-center">
-                <a class="nav-link text-succes" href="setting.html">
-                    <i class="fas fa-cog fa-lg d-block mb-3"></i> 
-                    SETTINGS
-                </a>
-
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Nikolas - Welcome Hero Screen-->
-      <div class="jumbotron mt-5">
-        <h1 class="display-4">Setting</h1>
-        <p class="lead">Make navigating around campus simple!</p>
-        <hr class="my-4">
-        
+          </li>
+        </ul>
       </div>
-      <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top" style="margin-top: auto;">
-        <p class="col-md-4 mb-0 text-muted">&copy; CAMPUSNAV</p>
-        <a href="#" class="col-md-4 d-flex align-items-center justify-content-end mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-          <i class="fa-brands fa-facebook me-3"></i> 
-          <i class="fa-brands fa-instagram me-3"></i>
-          <i class="fa-brands fa-linkedin"></i>
-          <svg class="bi me-2" width="40" height="32">
-                <use xlink:href="#bootstrap" />
-            </svg>
-        </a>
-    </footer>
+    </div>
+  </nav>
+
+  <!-- Nikolas - Welcome Hero Screen-->
+  <div class="jumbotron mt-5">
+    <h1 class="display-4">Setting</h1>
+    <p class="lead">Customize your app</p>
+    <hr class="my-4">
+  </div>
+
+  <div id="setting ">
+    <button class="btn btn-dark" id="themeBtn">Dark mode</button>
+
+  </div>
+  
+    
+
+  <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top" style="margin-top: auto;">
+    <p class="col-md-4 mb-0 text-muted">&copy; CAMPUSNAV</p>
+    <a href="#" class="col-md-4 d-flex align-items-center justify-content-end mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+      <i class="fa-brands fa-facebook me-3"></i> 
+      <i class="fa-brands fa-instagram me-3"></i>
+      <i class="fa-brands fa-linkedin"></i>
+      <svg class="bi me-2" width="40" height="32">
+        <use xlink:href="#bootstrap" />
+      </svg>
+    </a>
+</footer>
 
 
-    <!---------------------------------------------->
-    <!-- Your own JavaScript functions go here    -->
-    <!---------------------------------------------->
+  <!---------------------------------------------->
+  <!-- Your own JavaScript functions go here    -->
+  <!---------------------------------------------->
 
-    <!-- Link to scripts of your own -->
-    <!-- <script src="./scripts/script.js"></script> -->
-    <script src="./scripts/firebaseAPI.js"></script>
+  <!-- Link to scripts of your own -->
+  <!-- <script src="./scripts/script.js"></script> -->
+  <script src="./scripts/firebaseAPI.js"></script>
+  <script src="./scripts/setting.js"></script>
 
 </body>
 
