@@ -335,16 +335,6 @@ async function getRoute(map, start, end) {
     }
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 /**
  * Toggles the visibility of the session creation form.
  */
@@ -373,4 +363,3 @@ document.addEventListener("DOMContentLoaded", () => {
     descInput.addEventListener("input", checkFormReady);
 });
 
->>>>>>> Stashed changes
