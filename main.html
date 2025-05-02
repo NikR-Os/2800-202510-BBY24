@@ -56,71 +56,81 @@
   <!-- Nikolas - Welcome Hero Screen-->
   <div class="jumbotron mt-3">
     <h1 class="display-4">Welcome!</h1>
+  </div>
 
 
+  <!-- Flex row to hold session indicator and form side-by-side -->
+  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
 
-<!-- Flex row to hold session indicator and form side-by-side -->
-<div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
+    <!-- Enhanced session status display -->
+    <div id="session-indicator-wrapper" class="d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded"
+      style="min-width: 300px;">
 
-  <!-- Enhanced session status display -->
-  <div id="session-indicator-wrapper" class="d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded" style="min-width: 300px;">
-    
-    <div class="d-flex align-items-center gap-2">
-      <div id="session-status-message" class="mt-2 text-info"></div>
-      <div id="session-indicator" style="width: 12px; height: 12px; border-radius: 50%;"></div>
-      <span id="session-indicator-label">Checking session...</span>
-      <button id="delete-session-btn" type="button" class="btn btn-outline-danger btn-sm ms-auto" title="Delete Session">×</button>
+      <div class="d-flex align-items-center gap-2">
+        <div id="session-status-message" class="mt-2 text-info"></div>
+        <div id="session-indicator" style="width: 12px; height: 12px; border-radius: 50%;"></div>
+        <span id="session-indicator-label">Checking session...</span>
+        <button id="delete-session-btn" type="button" class="btn btn-outline-danger btn-sm ms-auto"
+          title="Delete Session">×</button>
+      </div>
+
+    </div>
+
+    <!-- Create Session button + popup form -->
+
+    <div>
+      <button class="btn btn-sage mb-2" onclick="toggleForm()">Create Session</button>
+
+      <div id="sessionFormPopup" style="display: none;">
+        <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
+          <h5>Create a Study Session</h5>
+
+          <label for="formGroupExampleInput" class="form-label">Session Description</label>
+          <input type="text" class="form-control mb-3" id="sessionFormInput" placeholder="Describe your session"
+            required>
+
+          <!-- Hidden input to store the selected session length -->
+          <input type="hidden" id="sessionLengthValue">
+
+          <div class="dropdown mb-3">
+            <button class="btn btn-secondary dropdown-toggle" id="lengthInput" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Length
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" id="length30" href="#" onclick="updateLength('30 minutes')">30 minutes</a>
+              </li>
+              <li><a class="dropdown-item" id="length60" href="#" onclick="updateLength('1 hour')">1 hour</a></li>
+              <li><a class="dropdown-item" id="length120" href="#" onclick="updateLength('2 hours')">2 hours</a></li>
+            </ul>
+          </div>
+
+          <!--  Disabled by default -->
+          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled>Submit Form</button>
+          <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
+        </form>
+      </div>
     </div>
 
   </div>
 
-  <!-- Create Session button + popup form -->
 
+
+  <!-- MAPBOX -->
+  <div id='map' style='width: 90%; height: 600px;'></div>
+  <!-- MAPBOX -->
   <div>
-    <button class="btn btn-sage mb-2" onclick="toggleForm()">Create Session</button>
-
-    <div id="sessionFormPopup" style="display: none;">
-      <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
-        <h5>Create a Study Session</h5>
-
-        <label for="formGroupExampleInput" class="form-label">Session Description</label>
-        <input type="text" class="form-control mb-3" id="sessionFormInput" placeholder="Describe your session" required>
-
-         <!-- Hidden input to store the selected session length -->
-         <input type="hidden" id="sessionLengthValue">
-
-        <div class="dropdown mb-3">
-          <button class="btn btn-secondary dropdown-toggle" id="lengthInput" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Length
-          </button>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" id="length30" href="#" onclick="updateLength('30 minutes')">30 minutes</a></li>
-            <li><a class="dropdown-item" id="length60" href="#" onclick="updateLength('1 hour')">1 hour</a></li>
-            <li><a class="dropdown-item" id="length120" href="#" onclick="updateLength('2 hours')">2 hours</a></li>
-          </ul>
-        </div>
-
-       <!--  Disabled by default -->
-       <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled>Submit Form</button>
-       <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
-     </form>
-   </div>
- </div>
-
-</div>
-
-
-
-    <!-- MAPBOX -->
-    <div id='map' style='width: 90%; height: 600px;'></div>
-    <!-- MAPBOX -->
-    <div>
-      <div class="card">
-      </div>
+    <div class="card">
     </div>
+  </div>
 
-   
-    
+  <div id="pop-menu">
+    <div id="directions-panel" style="margin-top: 10px;">
+      
+    </div>
+  </div>
+
+
   <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
     <p class="col-md-4 mb-0 text-muted">&copy; CAMPUSNAV</p>
 

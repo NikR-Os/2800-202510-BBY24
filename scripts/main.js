@@ -8,7 +8,7 @@ function showMap() {
     //Default location (YVR city hall) 49.26504440741209, -123.11540318587558
     let defaultCoords = { lat: 49.2490, lng: -123.0019 };
 
-    
+
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -68,7 +68,7 @@ function showMap() {
         // After the click, get the route from the user's location to the clicked location
         //---------------------------------------------------------------------------------
         getClickedLocation(map, (clickedLocation) => {
-             getRoute(map, userLocation, clickedLocation);
+            getRoute(map, userLocation, clickedLocation);
         });
 
         //---------------------------------
@@ -300,6 +300,24 @@ async function getRoute(map, start, end) {
     const json = await query.json();
     const data = json.routes[0];
     const route = data.geometry.coordinates;
+    const steps = data.legs[0].steps;
+    const minutesDuration = Math.round(data.duration / 60);
+
+    const directionsPanel = document.getElementById('directions-panel');
+    directionsPanel.innerHTML = ""; // clear previous
+
+    // Estimate for travel time.
+    const timeEstimate = document.createElement("h4");
+    timeEstimate.textContent = `Estimated time: ${minutesDuration} min`;
+    directionsPanel.appendChild(timeEstimate);
+
+    // Written directions to location.
+    steps.forEach((step, index) => {
+        const instruction = document.createElement("p");
+        instruction.textContent = `${index + 1}. ${step.maneuver.instruction}`;
+        directionsPanel.appendChild(instruction);
+    });
+
     console.log("route is " + route);
     const geojson = {
         type: 'Feature',
@@ -309,6 +327,7 @@ async function getRoute(map, start, end) {
             coordinates: route
         }
     };
+
     // if the route already exists on the map, we'll reset it using setData
     if (map.getSource('route')) {
         map.getSource('route').setData(geojson);
