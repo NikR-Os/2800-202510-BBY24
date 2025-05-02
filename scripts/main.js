@@ -335,5 +335,36 @@ async function getRoute(map, start, end) {
     }
 }
 
+<<<<<<< Updated upstream
 
 
+=======
+/**
+ * Toggles the visibility of the session creation form.
+ */
+function toggleForm() {
+    const form = document.getElementById("sessionFormPopup");
+    const button = document.querySelector(".btn-sage"); // Create Session button
+
+    const isFormVisible = form.style.display === "block";
+
+    // Toggle visibility
+    form.style.display = isFormVisible ? "none" : "block";
+    button.style.display = isFormVisible ? "inline-block" : "none"; // Hide or show button
+}
+
+
+// Enable the submit button only if both fields are filled
+function checkFormReady() {
+    const desc = document.getElementById("sessionFormInput").value.trim();
+    const length = document.getElementById("sessionLengthValue").value.trim();
+    const submitBtn = document.getElementById("submitSessionBtn");
+    submitBtn.disabled = !(desc && length);
+}
+//  Add listener to check description input on every keystroke
+document.addEventListener("DOMContentLoaded", () => {
+    const descInput = document.getElementById("sessionFormInput");
+    descInput.addEventListener("input", checkFormReady);
+});
+
+>>>>>>> Stashed changes
