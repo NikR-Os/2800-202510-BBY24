@@ -105,3 +105,25 @@ document.getElementById("signup-submit")?.addEventListener("click", function () 
     }
 });
 
+const MongoClient = require("mongodb");
+const uri = "mongodb+srv://carlmanansala:carlmanansala@studynav-cluster.mongodb.net/studynav";
+const client = new MongoClient(uri);
+
+async function insertingDataIntoMongo(name, password, admin)
+{
+    try
+    {
+        await client.connect();
+        const db = client.db("testing");
+        
+        db.users.insertOne({
+            name: name,
+            password: password,
+            isAdmin: admin
+        }) 
+    }
+    finally
+    {
+        await client.close();
+    }
+}
