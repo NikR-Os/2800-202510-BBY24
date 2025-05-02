@@ -3,11 +3,23 @@ const urlParams = new URLSearchParams(window.location.search);
 const action = urlParams.get('action'); // "login" or "signup"
 
 // Show the appropriate form based on the action
-if (action === "signup") {
-    document.getElementById("signup-form").style.display = "block";
+if(action === "signup") {
+    document.getElementById("sign-up-choices").style.display = "block";
+} else if (action === "student-signup") {
+    document.getElementById("student-signup-form").style.display = "block";
+} else if(action === "admin-signup") {
+    document.getElementById("admin-signup-form").style.display = "block";
 } else {
     document.getElementById("login-form").style.display = "block";
 }
+
+document.getElementById("student-signup-choice").addEventListener("click", function() {
+    window.location.assign("login.html?action=student-signup");
+});
+
+document.getElementById("admin-signup-choice").addEventListener("click", function() {
+    window.location.assign("login.html?action=admin-signup");
+});
 
 // Event listener for the "Log in" form
 document.getElementById("login-submit")?.addEventListener("click", function () {
@@ -92,3 +104,4 @@ document.getElementById("signup-submit")?.addEventListener("click", function () 
         alert("Please fill out all fields."); // Show error if fields are empty
     }
 });
+
