@@ -336,9 +336,12 @@ async function getRoute(map, start, end) {
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
 =======
+=======
+>>>>>>> Stashed changes
 /**
  * Toggles the visibility of the session creation form.
  */
