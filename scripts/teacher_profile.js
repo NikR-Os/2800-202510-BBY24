@@ -21,9 +21,7 @@ imageUpload.addEventListener('change', function(e) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            document.getElementById('profileImage').src = event.target.result;
-            
-            // In a real app, you would upload the image to your server here
+            document.getElementById('profileImage').src = event.target.result;           
             // uploadProfileImage(file);
         };
         reader.readAsDataURL(file);
@@ -82,9 +80,6 @@ profileForm.addEventListener('submit', function(e) {
     saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
     saveBtn.disabled = true;
     
-    // In a real app, you would send this to your backend:
-    // saveProfile(formData).then(() => { ... });
-    
     setTimeout(() => {
         saveBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Saved!';
         setTimeout(() => {
@@ -93,42 +88,4 @@ profileForm.addEventListener('submit', function(e) {
         }, 1500);
     }, 1000);
     
-    console.log('Form data to save:', formData);
 });
-
-// Example API functions (would connect to your backend)
-/*
-async function uploadProfileImage(file) {
-    const formData = new FormData();
-    formData.append('profileImage', file);
-    
-    try {
-        const response = await fetch('/api/teacher/upload-image', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: formData
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Image upload failed:', error);
-    }
-}
-
-async function saveProfile(data) {
-    try {
-        const response = await fetch('/api/teacher/profile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(data)
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Profile save failed:', error);
-    }
-}
-*/
