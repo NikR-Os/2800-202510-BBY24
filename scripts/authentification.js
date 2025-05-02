@@ -74,9 +74,9 @@ document.getElementById("login-submit")?.addEventListener("click", function () {
 
 // Event listener for the "Sign Up" form
 document.getElementById("signup-submit")?.addEventListener("click", function () {
-    const name = document.getElementById("signup-name").value;
-    const email = document.getElementById("signup-email").value;
-    const password = document.getElementById("signup-password").value;
+    const name = document.getElementById("student-signup-name").value;
+    const email = document.getElementById("student-signup-email").value;
+    const password = document.getElementById("student-signup-password").value;
 
     if (name && email && password) {
         firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -105,11 +105,26 @@ document.getElementById("signup-submit")?.addEventListener("click", function () 
     }
 });
 
+document.getElementById("admin-signup-form").addEventListener("click", function() {
+    const name = document.getElementById("admin-signup-name").value;
+    const email = document.getElementById("admin-signup-email").value;
+    const password = document.getElementById("admin-signup-password").value;
+    const isAdmin = true;
+
+    if(name &&
+       email &&
+       password 
+      )
+    {
+        insertingDataIntoMongo(name, email, password, isAdmin)
+    }  
+})
+
 const MongoClient = require("mongodb");
 const uri = "mongodb+srv://carlmanansala:carlmanansala@studynav-cluster.mongodb.net/studynav";
 const client = new MongoClient(uri);
 
-async function insertingDataIntoMongo(name, password, admin)
+async function insertingDataIntoMongo(name, email, password, admin)
 {
     try
     {
@@ -118,6 +133,7 @@ async function insertingDataIntoMongo(name, password, admin)
         
         db.users.insertOne({
             name: name,
+            email: email,
             password: password,
             isAdmin: admin
         }) 
