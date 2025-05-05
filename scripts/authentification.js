@@ -105,41 +105,41 @@ document.getElementById("signup-submit")?.addEventListener("click", function () 
     }
 });
 
-document.getElementById("admin-signup-form").addEventListener("click", function() {
-    const name = document.getElementById("admin-signup-name").value;
-    const email = document.getElementById("admin-signup-email").value;
-    const password = document.getElementById("admin-signup-password").value;
-    const isAdmin = true;
+// document.getElementById("admin-signup-form").addEventListener("click", function() {
+//     const name = document.getElementById("admin-signup-name").value;
+//     const email = document.getElementById("admin-signup-email").value;
+//     const password = document.getElementById("admin-signup-password").value;
+//     const isAdmin = true;
 
-    if(name &&
-       email &&
-       password 
-      )
-    {
-        insertingDataIntoMongo(name, email, password, isAdmin)
-    }  
-})
+//     if(name &&
+//        email &&
+//        password 
+//       )
+//     {
+//         insertingDataIntoMongo(name, email, password, isAdmin)
+//     }  
+// })
 
-const MongoClient = require("mongodb");
-const uri = "mongodb+srv://carlmanansala:carlmanansala@studynav-cluster.mongodb.net/studynav";
-const client = new MongoClient(uri);
+// const MongoClient = require("mongodb");
+// const uri = "mongodb+srv://carlmanansala:carlmanansala@studynav-cluster.mongodb.net/studynav";
+// const client = new MongoClient(uri);
 
-async function insertingDataIntoMongo(name, email, password, admin)
-{
-    try
-    {
-        await client.connect();
-        const db = client.db("testing");
+// async function insertingDataIntoMongo(name, email, password, admin)
+// {
+//     try
+//     {
+//         await client.connect();
+//         const db = client.db("testing");
         
-        db.users.insertOne({
-            name: name,
-            email: email,
-            password: password,
-            isAdmin: admin
-        }) 
-    }
-    finally
-    {
-        await client.close();
-    }
-}
+//         db.users.insertOne({
+//             name: name,
+//             email: email,
+//             password: password,
+//             isAdmin: admin
+//         }) 
+//     }
+//     finally
+//     {
+//         await client.close();
+//     }
+// }
