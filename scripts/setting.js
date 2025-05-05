@@ -6,12 +6,18 @@ const bodyElement = document.body;
 const root = document.documentElement;
 const navbar = document.getElementById('navbar');
 
-let currentFontSize = 16;
+let currentFontSize = 100;
+let darkmode = false;
 
 // dark mode event listener
 themeToggleBtn.addEventListener('click', () => {
     //toggle body dark-mode
     bodyElement.classList.toggle('dark-mode');
+    if(darkmode){
+        darkmode = false;
+    } else {
+        darkmode = true;
+    }
 
     if (bodyElement.classList.contains('dark-mode')) {
         navbar.classList.remove('bg-body-tertiary');
