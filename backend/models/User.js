@@ -6,6 +6,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   session: { type: String, default: null },
   groupCode: { type: String, default: null },
+  role:{type: String, enum: ['student', 'teacher'], required: true},
+  //Student specific fields
+  program: String,
+  year: Number,
+  //Teacher specific fields
+  department: String,
+  position: String,
+  courses: [String]
 });
 
 module.exports = mongoose.model("User", userSchema);
