@@ -6,11 +6,11 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   session: { type: String, default: null },
   groupCode: { type: String, default: null },
-  role:{type: String, enum: ['student', 'teacher'], required: true},
+  role:{type: String, enum: ['student', 'admin'], required: true},
   //Student specific fields
   program: String,
   year: Number,
-  //Teacher specific fields
+  //admin specific fields
   department: String,
   position: String,
   courses: [String]
