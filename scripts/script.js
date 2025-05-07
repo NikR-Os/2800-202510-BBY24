@@ -25,7 +25,7 @@ if (signupForm) {
     const password = document.getElementById("signup-password").value;
 
     try {
-      const res = await fetch("http://localhost:8000/signup", {
+      const res = await fetch("http://localhost:8000/signup", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -66,7 +66,7 @@ if (signupForm) {
         const password = document.getElementById("login-password").value; //Collects the user’s login credentials from the form.
   
         try {
-          const res = await fetch("http://localhost:8000/login", {
+          const res = await fetch("http://localhost:8000/login", { //hardcoded values 
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
