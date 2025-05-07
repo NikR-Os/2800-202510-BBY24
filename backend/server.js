@@ -50,7 +50,7 @@ app.post('/signup', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create and save the new user
+    // This is where you add information to the User Schema
     const newUser = new User({
       name,
       email,
@@ -140,7 +140,7 @@ app.get('/sessions/:sessionId', async (req, res) => {
   }
 });
 
-// Route: Create a new session
+// Route: Create a new session(Add information to Session schema)
 app.post('/sessions', async (req, res) => {
   try {
     const {

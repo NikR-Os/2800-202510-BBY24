@@ -1,3 +1,5 @@
+//update user schema if you need to add a field to the User
+//document
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
