@@ -10,6 +10,7 @@ const cors = require("cors");                        // Import CORS to allow cro
 const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname + '/../'));
 
                              
 const port = 8000;                                   // Set server port

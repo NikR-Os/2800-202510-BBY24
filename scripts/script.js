@@ -1,61 +1,100 @@
+// Determine what form to show based on URL params
+const params = new URLSearchParams(window.location.search);
+const action = params.get('action');
+
+if (action === 'signup' || action === 'student-signup') {
+  document.getElementById("student-signup-form").style.display = "block";
+} else if (action === 'admin-signup') {
+  document.getElementById("admin-signup-form").style.display = "block";
+} else {
+  // Default to showing the login form
+  document.getElementById("login-form").style.display = "block";
+}
+
+
 // Handle signup using the form's submit event
-document.getElementById("signup-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
 
-  const name = document.getElementById("signup-name").value;
-  const email = document.getElementById("signup-email").value;
-  const password = document.getElementById("signup-password").value;
+const signupForm = document.getElementById("signup-form");
 
-  try {
-    const res = await fetch("http://localhost:8000/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+if (signupForm) {
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const data = await res.json();
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
 
-    if (res.ok) {
-      alert("Signup successful. Logging you in...");
-      // Optionally auto-login after signup
-      sessionStorage.setItem("userId", data.userId);
-      window.location.href = "main.html";
-    } else {
-      alert("Signup failed: " + data.message);
+    try {
+      const res = await fetch("http://localhost:8000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Signup successful. Logging you in...");
+        sessionStorage.setItem("userId", data.userId);
+        window.location.href = "main.html";
+      } else {
+        alert("Signup failed: " + data.message);
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("Something went wrong during signup.");
     }
-  } catch (err) {
-    console.error("Signup error:", err);
-    alert("Something went wrong during signup.");
-  }
-});
+  });
+}
+
 
   
   // Handle login
-  document.getElementById("login-submit").addEventListener("click", async (e) => {
-    e.preventDefault();
+  document.addEventListener("DOMContentLoaded", () => { //Waits until the entire HTML is fully loaded before running the code.
+
+    console.log("Login page loaded...");
+    const loginButton = document.getElementById("login-submit");
+    console.log("loginButton:", loginButton);
+      
+    if (loginButton) { //Makes sure the login button is on the page before trying to use it (prevents your error).
+
+      loginButton.addEventListener("click", async (e) => { //When clicked, prevent the default form action.
+
+        e.preventDefault();
   
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value; //Collects the user’s login credentials from the form.
   
-    const res = await fetch("http://localhost:8000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
+        try {
+          const res = await fetch("http://localhost:8000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          }); //Sends the login data to your backend.
   
-    const data = await res.json();
+          const data = await res.json(); //If login is successful, store the user ID and redirect to main.html.
   
-    if (res.ok) {
-      alert("Login successful!");
-      sessionStorage.setItem("userId", data.userId); // ✅ store user ID
-      window.location.href = "main.html";
+          if (res.ok) {
+            alert("Login successful!");
+            sessionStorage.setItem("userId", data.userId);
+            window.location.href = "main.html";
+          } else {
+            if (data.message === "User not found.") {
+              alert("User not found. Switching to signup...");
+              window.location.href = "login.html?action=signup";
+            } else {
+              alert("Login failed: " + data.message);
+            }
+          }
+  
+        } catch (err) {
+          console.error("Login error:", err);
+          alert("Something went wrong.");
+        }
+      });
     } else {
-      if (data.message === "User not found.") {
-        alert("User not found. Switching to signup...");
-        window.location.href = "login.html?action=signup"; // 👈 switch form
-      } else {
-        alert("Login failed: " + data.message);
-      }
+      console.error("Login button not found in the DOM.");
     }
   });
+  
   
