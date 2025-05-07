@@ -1,15 +1,3 @@
-// Determine what form to show based on URL params
-const params = new URLSearchParams(window.location.search);
-const action = params.get('action');
-
-if (action === 'signup' || action === 'student-signup') {
-  document.getElementById("student-signup-form").style.display = "block";
-} else if (action === 'admin-signup') {
-  document.getElementById("admin-signup-form").style.display = "block";
-} else {
-  // Default to showing the login form
-  document.getElementById("login-form").style.display = "block";
-}
 
 
 // Handle signup using the form's submit event
