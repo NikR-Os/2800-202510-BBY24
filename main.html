@@ -63,7 +63,7 @@
   <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
 
     <!-- Enhanced session status display -->
-    <div id="session-indicator-wrapper" class="d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded"
+    <div id="session-indicator-wrapper" class=" mb-2 d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded"
       style="min-width: 300px;">
 
       <div class="d-flex align-items-center gap-2">
@@ -78,8 +78,8 @@
 
     <!-- Create Session button + popup form -->
 
-    <div>
-      <button class="btn btn-sage mb-2" onclick="toggleForm()">Create Session</button>
+    <div class="d-flex flex-column align-items-start gap-1"> <!--holds session and chat button-->
+      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
 
       <div id="sessionFormPopup" style="display: none;">
         <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
@@ -110,9 +110,30 @@
           <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
         </form>
       </div>
-    </div>
 
-  </div>
+    <!-- Chat Button and Chat Popup -->
+      <!-- Chat Button -->
+      <button class="btn btn-sage btn-sm  mb-2 w-100" onclick="toggleChatForm()">Chatbox</button>
+
+      <!-- Hidden Chat Form -->
+      <div id="chatFormPopup" style="display: none;">
+        <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); sendMessage();">
+          <h5>Send a Message</h5>
+
+          <label for="recipientEmail" class="form-label">Recipient Email</label>
+          <input type="email" class="form-control mb-3" id="recipientEmail" placeholder="Enter recipient email"
+            required>
+
+          <label for="chatInput" class="form-label">Your Message</label>
+          <input type="text" class="form-control mb-3" id="chatInput" placeholder="Type your message" required>
+
+          <button type="submit" class="btn btn-success">Send</button>
+          <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
+
+          <ul id="chat-messages" class="mt-3 list-unstyled text-start"></ul>
+        </form>
+      </div>
+    </div>
 
 
 
@@ -126,7 +147,7 @@
 
   <div id="pop-menu">
     <div id="directions-panel" style="margin-top: 10px;">
-      
+
     </div>
   </div>
 
@@ -157,6 +178,8 @@
   <script src="./scripts/script.js"></script>
   <script src="./scripts/skeleton.js"></script>
   <script src="./scripts/session.js"></script>
+  <script src="./scripts/chatbox.js"></script>
+
 
 
 
