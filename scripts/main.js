@@ -71,6 +71,8 @@ function showMap() {
             getRoute(map, userLocation, clickedLocation);
         });
 
+        recenterMap(map, userLocation);
+
         //---------------------------------
         // Add interactive pins for the sessions
         //---------------------------------
@@ -78,6 +80,14 @@ function showMap() {
     }
 }
 showMap();
+
+function recenterMap(map, userLocation) {
+    document.getElementById("recenter-button").addEventListener("click", () => {
+        map.flyTo({center: userLocation, zoom: 15})
+    })
+}
+
+
 
 // update the Length button's text when a dropdown item is selected.
 function updateLength(length) {
