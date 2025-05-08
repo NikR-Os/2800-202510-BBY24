@@ -1,4 +1,5 @@
 async function writeSessions() {
+    const baseUrl = window.location.origin;
     const selectedLength = document.getElementById("lengthInput").textContent;
     const userId = sessionStorage.getItem("userId");
 
@@ -9,7 +10,8 @@ async function writeSessions() {
 
     try {
         // 1. Fetch user info from MongoDB
-        const userRes = await fetch(`http://localhost:8000/users/${userId}`);
+        const userRes = await fetch(`${baseUrl}/users/${userId}`);
+       
         const user = await userRes.json();
 
         const userName = user.name;
@@ -23,7 +25,7 @@ async function writeSessions() {
             };
 
             // 3. Create the session in MongoDB
-            const sessionRes = await fetch("http://localhost:8000/sessions", {
+            const sessionRes = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -43,7 +45,7 @@ async function writeSessions() {
             const session = sessionData._id;
 
             // 4. Update the user’s document with the session ID
-            await fetch(`http://localhost:8000/users/${userId}/session`, {
+            await fetch(`${baseUrl}/users/${userId}/session`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
@@ -80,7 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // Load and Display Session Indicator
 // ================================
 document.addEventListener("DOMContentLoaded", async () => {
+
     // Get references to the DOM elements that will show the session status
+    const baseUrl = window.location.origin;
     const indicator = document.getElementById("session-indicator");         // The coloured dot
     const label = document.getElementById("session-indicator-label");       // The text beside the dot
     const deleteBtn = document.getElementById("delete-session-btn");        // The delete session button
@@ -93,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         // Fetch the user's document from your MongoDB backend
-        const res = await fetch(`http://localhost:8000/users/${userId}`); //hardcoded values 
+        const res = await fetch(`${baseUrl}/users/${userId}`);
         const userData = await res.json();
 
         const userName = userData.name || "there";       // Fallback name
@@ -101,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (session) {
             // Fetch the session document if user has one
-            const sessionRes = await fetch(`http://localhost:8000/sessions/${session}`); //hardcoded values 
+            const sessionRes = await fetch(`${baseUrl}/sessions/${session}`);
             const sessionData = await sessionRes.json();
 
             const startTime = new Date(sessionData.timestamp); // Convert timestamp to Date
@@ -138,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Delete Current Session
 // ================================
 async function deleteCurrentUserSession() {
+    const baseUrl = window.location.origin;
     const userId = sessionStorage.getItem("userId");
     if (!userId) {
         alert("User not logged in.");
@@ -146,7 +151,7 @@ async function deleteCurrentUserSession() {
 
     try {
         // Fetch the user's document to get the current session ID
-        const res = await fetch(`http://localhost:8000/users/${userId}`); //hardcoded values 
+        const res = await fetch(`${baseUrl}/users/${userId}`);
         const user = await res.json();
         const session = user.session;
 
@@ -156,12 +161,12 @@ async function deleteCurrentUserSession() {
         }
 
         // Delete the session document
-        await fetch(`http://localhost:8000/sessions/${session}`, { //hardcoded values 
+        await fetch(`${baseUrl}/sessions/${session}`, {
             method: "DELETE"
         });
 
         // Clear the session field from the user document
-        await fetch(`http://localhost:8000/users/${userId}/session`, { //hardcoded values 
+        await fetch(`${baseUrl}/users/${userId}/session`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session: null })
