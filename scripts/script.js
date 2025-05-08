@@ -48,6 +48,7 @@ document.getElementById("signup-form").addEventListener("submit", async (e) => {
     if (res.ok) {
       alert("Login successful!");
       sessionStorage.setItem("userId", data.userId); // ✅ store user ID
+      sessionStorage.setItem("userRole", data.role); // store user role 
       window.location.href = "main.html";
     } else {
       if (data.message === "User not found.") {

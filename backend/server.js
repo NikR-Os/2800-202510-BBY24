@@ -85,7 +85,9 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials." });
   }
 
-  res.status(200).json({ message: "Login successful", userId: user._id });
+  res.status(200).json({ message: "Login successful", userId: user._id,
+    role: user.role
+  });
 });
 
 //  Route: Get user document by ID
@@ -184,6 +186,62 @@ app.delete('/sessions/:sessionId', async (req, res) => {
   } catch (error) {
     console.error("Error deleting session:", error);
     res.status(500).json({ message: "Failed to delete session." });
+  }
+});
+
+// PROFILE ROUTES
+// Get user profile data
+app.get('/profile/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      program: user.program,
+      year: user.year,
+      department: user.department,
+      position: user.position,
+      courses: user.courses || []
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update student profile
+app.put('/profile/student/:userId', async (req, res) => {
+  try {
+    const { name, program, year } = req.body;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      { name, program, year, role: 'student' },
+      { new: true }
+    );
+    
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Update admin profile
+app.put('/profile/admin/:userId', async (req, res) => {
+  try {
+    const { name, department, position, courses } = req.body;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      { name, department, position, courses, role: 'admin' },
+      { new: true }
+    );
+    
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 
