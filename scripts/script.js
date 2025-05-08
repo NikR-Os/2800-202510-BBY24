@@ -1,10 +1,10 @@
 // Handle signup using the form's submit event
-document.getElementById("signup-form").addEventListener("submit", async (e) => {
+document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
   e.preventDefault();
 
-  const name = document.getElementById("signup-name").value;
-  const email = document.getElementById("signup-email").value;
-  const password = document.getElementById("signup-password").value;
+  const name = document.getElementById("student-signup-name").value;
+  const email = document.getElementById("student-signup-email").value;
+  const password = document.getElementById("student-signup-password").value;
 
   try {
     const res = await fetch("http://localhost:8000/signup", {

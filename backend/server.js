@@ -1,7 +1,7 @@
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");   
-const User = require('./models/User');               // Import Mongoose for MongoDB
-console.log("User model loaded:", typeof User === 'function');
+const Student = require('./models/User');               // Import Mongoose for MongoDB
+console.log("User model loaded:", typeof Student === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
@@ -18,7 +18,7 @@ app.use(cors());                                     // Enable CORS
 app.use(express.json());                             // Enable JSON body parsing
 
 // Connect to MongoDB
-const mongoURI = "mongodb+srv://bearjenny0909:Berenice.0909@studynav-cluster.cfjiesj.mongodb.net/studynav";
+const mongoURI = "mongodb+srv://carlmanansala:carlmanansala@studynav-cluster.cfjiesj.mongodb.net/studynav";
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -42,25 +42,25 @@ app.post('/signup', async (req, res) => {
 
   try {
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: "User already exists." });
+    const existingStudent = await Student.findOne({ email });
+    if (existingStudent) {
+      return res.status(409).json({ message: "Student already exists." });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create and save the new user
-    const newUser = new User({
+    const newStudent = new Student({
       name,
       email,
       password: hashedPassword
     });
 
-    await newUser.save();
+    await newStudent.save();
 
     // Respond with success + user ID
-    res.status(200).json({ message: "Signup successful", userId: newUser._id });
+    res.status(200).json({ message: "Signup successful", userId: newStudent._id });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error." });
