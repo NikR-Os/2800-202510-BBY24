@@ -1,9 +1,10 @@
+require("dotenv").config(); 
+
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");   
 const User = require('./models/User');               // Import Mongoose for MongoDB
 console.log("User model loaded:", typeof User === 'function');
 const Session = require('./models/Session');         //  Import the real schema
-
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
 
@@ -13,13 +14,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../'));
 
                              
-const port = 8000;                                   // Set server port
-
+const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
-app.use(express.json());                             // Enable JSON body parsing
 
 // Connect to MongoDB
-const mongoURI = "mongodb+srv://bearjenny0909:Berenice.0909@studynav-cluster.cfjiesj.mongodb.net/studynav";
+const mongoURI = process.env.MONGO_URI;
+
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
