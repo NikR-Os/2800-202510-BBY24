@@ -187,11 +187,11 @@ app.delete('/sessions/:sessionId', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, 'text')));
+// app.use(express.static(path.join(__dirname, 'text')));
 
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'text', '404.html'));
-});
+// app.use((req, res) => {
+//   res.status(404).sendFile(path.join(__dirname, 'text', '404.html'));
+// });
 
 // Start server
 app.listen(port, () => {
