@@ -13,7 +13,10 @@ const userSchema = new mongoose.Schema({
   //admin specific fields
   department: String,
   position: String,
-  courses: [String]
+  courses: [String],
+  //setting saving
+  darkmode: {type: Boolean, default: false},
+  fontSize: {type: Number, default: 100}
 });
 
 module.exports = mongoose.model("User", userSchema);

@@ -12,13 +12,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
                              
-const port = 8000;                                   // Set server port
+const PORT = process.env.PORT || 8000;               // Set server port
 
 app.use(cors());                                     // Enable CORS
 app.use(express.json());                             // Enable JSON body parsing
 
 // Connect to MongoDB
-const mongoURI = "mongodb+srv://bearjenny0909:Berenice.0909@studynav-cluster.cfjiesj.mongodb.net/studynav";
+const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -187,11 +187,6 @@ app.delete('/sessions/:sessionId', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, 'text')));
-
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'text', '404.html'));
-});
 
 // Start server
 app.listen(port, () => {

@@ -1,0 +1,32 @@
+.setting{
+    margin: auto;
+    display: grid;
+    grid-template-columns: 100px 100px ;
+    grid-template-rows: auto;
+    justify-content: space-evenly;
+}
+
+.btn{
+    padding: auto;
+}
+
+body.dark-mode {
+background-color: #121212;
+color: white;
+}
+
+body.protanopia {
+    background-color: #e0e0e0;
+    color: #000;
+}
+
+body.tritanopia {
+    background-color: #d6d6ff;
+    color: #000;
+}
+
+body.deuteranopia {
+    background-color: #f0f0d0;
+    color: #000;
+}
+  
