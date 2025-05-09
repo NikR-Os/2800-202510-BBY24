@@ -210,6 +210,16 @@ app.delete('/sessions/:sessionId', async (req, res) => {
   }
 });
 
+// Route: Get all sessions
+app.get('/sessions', async (req, res) => {
+    try {
+        const sessions = await Session.find();
+        res.json(sessions);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching sessions." });
+    }
+});
+
 // Start server
 const server = http.createServer(app);
 const io = new Server(server, {
