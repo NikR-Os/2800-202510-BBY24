@@ -64,8 +64,9 @@ if (signupForm) {
           const data = await res.json(); // Wait for and parse the JSON response from the server.
       
           if (res.ok) { // Check if the HTTP response status is in the 200–299 range, indicating success.
-            alert("Login successful!"); // Notify the user that the login was successful.
+            
             sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
+
             window.location.href = "main.html"; // Redirect the user to the main application page (frontend path).
           } else { // If the login attempt failed (bad credentials or other issue)...
             if (data.message === "User not found.") { // Specific check if the user was not found in the backend.

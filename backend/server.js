@@ -1,5 +1,6 @@
 require("dotenv").config(); 
-
+const http = require("http");
+const { Server } = require("socket.io");
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");   
 const User = require('./models/User');               // Import Mongoose for MongoDB
@@ -86,7 +87,7 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials." });
   }
 
-  res.status(200).json({ message: "Login successful", userId: user._id });
+  res.status(200).json({ userId: user._id, name: user.name });
 });
 
 //  Route: Get user document by ID
@@ -190,6 +191,74 @@ app.delete('/sessions/:sessionId', async (req, res) => {
 
 
 // Start server
-app.listen(port, () => {
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
+
+const connectedUsers = {}; // { username: socketId }
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // Handle registration of a connected user
+  // The client sends their username after fetching it from the database
+  socket.on("register", (username) => {
+    if (!connectedUsers[username]) {
+      connectedUsers[username] = [];
+    }
+
+    // Add this socket to the list of the user's active connections
+    connectedUsers[username].push(socket.id);
+
+    console.log(`Registered: ${username} with socket ID: ${socket.id}`);
+    console.log("Connected users now:", connectedUsers);
+  });
+
+  // Handle incoming private messages
+  socket.on("private message", async ({ toUsername, fromUserId, message }) => {
+    try {
+      const sender = await User.findById(fromUserId);
+      if (!sender) {
+        console.warn("Sender not found in DB:", fromUserId);
+        return;
+      }
+
+      const fromUsername = sender.name;
+      console.log("Message from", fromUsername, "to", toUsername, ":", message);
+
+      // Look up all active socket IDs for the recipient
+      const targetSocketIds = connectedUsers[toUsername] || [];
+      console.log("Target socket IDs for recipient:", targetSocketIds);
+
+      if (targetSocketIds.length > 0) {
+        targetSocketIds.forEach((id) => {
+          // Deliver the message to each active tab/window of the recipient
+          io.to(id).emit("private message", { message, fromUsername });
+        });
+      } else {
+        console.warn("No active socket ID found for recipient:", toUsername);
+      }
+    } catch (error) {
+      console.error("Error processing private message:", error);
+    }
+  });
+
+  // When a user disconnects, remove their socket from the connectedUsers map
+  socket.on("disconnect", () => {
+    for (const [username, socketIds] of Object.entries(connectedUsers)) {
+      connectedUsers[username] = socketIds.filter((id) => id !== socket.id);
+
+      // If the user has no more active sockets, clean up the entry
+      if (connectedUsers[username].length === 0) {
+        delete connectedUsers[username];
+      }
+    }
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+
+server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
