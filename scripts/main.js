@@ -71,11 +71,8 @@ function showMap() {
             getRoute(map, userLocation, clickedLocation);
         });
 
-<<<<<<< HEAD
-=======
         recenterMap(map, userLocation);
 
->>>>>>> parent of 0fc3c4a (Merge branch 'session_pins_nikolas' into dev)
         //---------------------------------
         // Add interactive pins for the sessions
         //---------------------------------
@@ -84,8 +81,6 @@ function showMap() {
 }
 showMap();
 
-<<<<<<< HEAD
-=======
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
         map.flyTo({center: userLocation, zoom: 15})
@@ -94,7 +89,6 @@ function recenterMap(map, userLocation) {
 
 
 
->>>>>>> parent of 0fc3c4a (Merge branch 'session_pins_nikolas' into dev)
 // update the Length button's text when a dropdown item is selected.
 function updateLength(length) {
     document.getElementById("lengthInput").textContent = length;
