@@ -1,153 +1,116 @@
-function writeSessions() {
-    // Define a variable for the collection you want to create in Firestore
-    var sessionsRef = db.collection("sessions");
+// Handle the sign up for students
+document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
+  e.preventDefault();
 
-    // Get the selected length from the button text
-    var selectedLength = document.getElementById("lengthInput").textContent;
+  const name = document.getElementById("student-signup-name").value;
+  const email = document.getElementById("student-signup-email").value;
+  const password = document.getElementById("student-signup-password").value;
 
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            // Get user's email
-            var userEmail = user.email;
-
-            // Fetch user's name from Firestore before proceeding
-            db.collection("users").doc(user.uid).get().then(doc => {
-                if (doc.exists) {
-                    var userName = doc.data().name; // Get the stored name
-
-                    // Start geolocation after retrieving the name
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        var geolocation = new firebase.firestore.GeoPoint(position.coords.latitude, position.coords.longitude);
-                        
-                        // Create the session only after userName is available
-                        sessionsRef.add({
-                            owner: userName,  // Store the authenticated user's name instead of UID
-                            ownerEmail: userEmail, // Store the authenticated user's email
-                            geolocation: geolocation,
-                            description: document.querySelector('#sessionFormInput').value,
-                            length: selectedLength, // Store selected length
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp() // Current system time
-                        })
-                            .then(docRef => {  // Once the session is successfully created...
-                                //  Update the logged-in user's document in Firestore to store the session ID
-                                db.collection("users").doc(user.uid).update({
-                                    session: docRef.id // Store the newly created session's unique ID in the user's document
-                                })
-                                    .catch(error => { // Handle errors if the user document update fails
-                                        console.error("Error updating user document: ", error);
-                                    });
-                            })
-                            .catch(error => { // Handle errors if session creation fails
-                                console.error("Error adding session: ", error);
-                            });
-                            
-                    }, function (error) {
-                        console.error("Geolocation error: " + error.message);
-                        alert("Could not retrieve geolocation. Please try again.");
-                    });
-
-                } else {
-                    console.error("User document does not exist in Firestore.");
-                }
-            }).catch(error => {
-                console.error("Error fetching user name from Firestore:", error);
-            });
-
-        } else {
-            alert("You must be logged in to create a session.");
-        }
+  try {
+    const res = await fetch("http://localhost:8000/signup?type=student", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
     });
-}
+      const data = await res.json();
 
-
-function checkSessionExpiration(sessionId, created, length) {
-    // Convert session length to milliseconds
-    let lengthInMillis = convertLengthToMillis(length);
-
-    // Calculate the expiration time (created time + session length)
-    let expirationTime = created.seconds * 1000 + lengthInMillis; // created is a Firestore timestamp
-
-    // Get the current time
-    let currentTime = Date.now();
-
-    // If the current time has passed the expiration time, delete the session
-    if (currentTime >= expirationTime) {
-
-        //Find the user that owns this session
-        db.collection("users").where("session", "==", sessionId).get()
-            .then(querySnapshot => {
-                // 🔽 ADDED: Directly access the first (and only) matching user document
-                let userDoc = querySnapshot.docs[0];
-
-                // Clear the session field in that user's Firestore document
-                db.collection("users").doc(userDoc.id).update({ session: null })
-                    .then(() => {
-                        console.log("User session cleared.");
-
-                        // Delete session *after* clearing the user's session field
-                        deleteSession(sessionId);
-                    })
-                    .catch(error => {
-                        console.error("Error clearing user session:", error);
-                    });
-            })
-            .catch(error => {
-                console.error("Error finding user with session:", error);
-            });
-
-
+      if (res.ok) {
+        alert("Signup successful. Logging you in...");
+        sessionStorage.setItem("userId", data.userId);
+        window.location.href = "main.html";
+      } else {
+        alert("Signup failed: " + data.message);
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("Something went wrong during signup.");
     }
-}
+  });
 
-function convertLengthToMillis(length) {
-    // Convert session length string to milliseconds
-    if (length === "30 minutes") {
-        return 30 * 60 * 1000;
-    } else if (length === "1 hour") {
-        return 60 * 60 * 1000;
-    } else if (length === "2 hours") {
-        return 2 * 60 * 60 * 1000;
-    }
-    return 0; // Default to 0 if no length is matched
-}
 
-// Example: Check every minute
-setInterval(function () {
-    db.collection("sessions").get().then(snapshot => {
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const created = data.created; // Firestore timestamp
-            const length = data.length;
 
-            // Check if session is expired
-            checkSessionExpiration(doc.id, created, length);
-        });
+// Handles the sign up for admins 
+document.getElementById("admin-signup-submit").addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("admin-signup-name").value;
+  const email = document.getElementById("admin-signup-email").value;
+  const password = document.getElementById("admin-signup-password").value;
+
+  try {
+    const res = await fetch("http://localhost:8000/signup?type=admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
     });
-}, 60000); // Check every minute (60000 ms)
 
+    const data = await res.json();
 
-function deleteSession(sessionId) {
-    var sessionRef = db.collection("sessions").doc(sessionId);
-
-    sessionRef.delete().then(function () {
-        console.log("Session successfully deleted!");
-    }).catch(function (error) {
-        console.error("Error removing session: ", error);
-    });
-}
-
-// Wait until the entire HTML document is fully loaded before running this code
-document.addEventListener("DOMContentLoaded", () => {
-
-    // Look for the delete session button in the DOM by its unique ID
-    const deleteBtn = document.getElementById("delete-session-btn");
-
-    //  Check that the button actually exists on the page before trying to use it
-    // This prevents errors in case the button isn't rendered yet or is missing from the HTML
-    if (deleteBtn) {
-
-        //  Attach an event listener to the button that listens for a "click" event
-        // When the button is clicked, it will call the deleteCurrentUserSession() function
-        deleteBtn.addEventListener("click", deleteCurrentUserSession);
-    }
+    if (res.ok) {
+      alert("Signup successful. Logging you in...");
+      // Optionally auto-login after signup
+      sessionStorage.setItem("userId", data.userId);
+      window.location.href = "adminMain.html";
+    } else {
+      alert("Signup failed: " + data.message);
+       }
+  } catch (err) {
+    console.error("Signup error:", err);
+    alert("Something went wrong during signup.");
+  }
 });
+
+  
+  // Handle login
+  document.addEventListener("DOMContentLoaded", () => { //Waits until the entire HTML is fully loaded before running the code.
+
+    console.log("Login page loaded...");
+    const loginButton = document.getElementById("login-submit");
+    console.log("loginButton:", loginButton);
+      
+    if (loginButton) { //Makes sure the login button is on the page before trying to use it (prevents your error).
+
+      loginButton.addEventListener("click", async (e) => { // Attach a click event listener to the login button. This function will run when the button is clicked.
+        e.preventDefault(); // Prevent the default form submission behavior (page reload).
+      
+        const email = document.getElementById("login-email").value; // Get the email entered in the login form input.
+        const password = document.getElementById("login-password").value; // Get the password entered in the login form input.
+      
+        const baseUrl = window.location.origin; // Dynamically determine the current domain (useful for dev/prod compatibility).
+      
+        try {
+          const res = await fetch(`${baseUrl}/login`, { // Send a POST request to the backend login endpoint at the same origin.
+            method: "POST", // Use the POST HTTP method to send login data securely.
+            headers: { "Content-Type": "application/json" }, // Indicate that the request body is JSON.
+            body: JSON.stringify({ email, password }) // Convert the email and password into a JSON string to send in the request body.
+          });
+      
+          const data = await res.json(); // Wait for and parse the JSON response from the server.
+      
+          if (res.ok) { // Check if the HTTP response status is in the 200–299 range, indicating success.
+            
+            sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
+            sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
+            sessionStorage.setItem("userRole", data.role); // store user role 
+
+            window.location.href = "main.html"; // Redirect the user to the main application page (frontend path).
+          } else { // If the login attempt failed (bad credentials or other issue)...
+            if (data.message === "User not found.") { // Specific check if the user was not found in the backend.
+              alert("User not found. Switching to signup..."); // Inform the user and redirect to the signup screen.
+              window.location.href = "login.html?action=signup"; // Navigate to the login page with the signup action (triggers signup UI).
+            } else {
+              alert("Login failed: " + data.message); // Show a generic login failure message returned from the backend.
+            }
+          }
+      
+        } catch (err) { // Catch any unexpected errors during the fetch call or response parsing.
+          console.error("Login error:", err); // Log the error to the developer console for debugging.
+          alert("Something went wrong."); // Show a generic error message to the user.
+        }
+      });
+      
+      
+    } else {
+      console.error("Login button not found in the DOM.");
+    }
+  });
