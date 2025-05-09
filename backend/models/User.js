@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   position: String,
   courses: [String],
   //setting saving
-  darkmode: {type: Boolean, default: false},
+  theme: {type: String, enum: ['protanopia', 'tritanopia', 'deuteranopia', 'normal-mode'], default: 'normal-mode'},
   fontSize: {type: Number, default: 100}
 });
 

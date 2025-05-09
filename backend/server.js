@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
                              
-const PORT = process.env.PORT || 8000;               // Set server port
+const port = process.env.PORT || 8000;               // Set server port
 
 app.use(cors());                                     // Enable CORS
 app.use(express.json());                             // Enable JSON body parsing
