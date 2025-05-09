@@ -108,7 +108,7 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials." });
   }
 
-  res.status(200).json({ userId: user._id, name: user.name });
+  res.status(200).json({ userId: user._id, name: user.name, role: user.role});
 });
 
 //  Route: Get user document by ID
@@ -214,6 +214,7 @@ app.delete('/sessions/:sessionId', async (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" }
+
 });
 
 const connectedUsers = {}; // { username: socketId }
@@ -278,6 +279,87 @@ io.on("connection", (socket) => {
   });
 });
 
+// PROFILE ROUTES
+// Get user profile data
+app.get('/profile/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    // Check if it's a student
+    const student = await Student.findOne({ email });
+    if (student) {
+      return res.json({
+        name: student.name,
+        email: student.email,
+        role: 'student',
+        program: student.program,
+        year: student.year,
+        courses: student.courses || []
+      });
+    }
+    
+    // Check if it's an admin
+    const admin = await Admin.findOne({ email });
+    if (admin) {
+      return res.json({
+        name: admin.name,
+        email: admin.email,
+        role: 'admin',
+        department: admin.department,
+        position: admin.position,
+        courses: admin.courses || []
+      });
+    }
+    
+    return res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update student profile
+app.put('/profile/student/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { name, program, year, courses } = req.body;
+    
+    const updatedStudent = await Student.findOneAndUpdate(
+      { email },
+      { name, program, year, courses },
+      { new: true }
+    );
+    
+    if (!updatedStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    res.json(updatedStudent);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Update admin profile
+app.put('/profile/admin/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { name, department, position, courses } = req.body;
+    
+    const updatedAdmin = await Admin.findOneAndUpdate(
+      { email },
+      { name, department, position, courses },
+      { new: true }
+    );
+    
+    if (!updatedAdmin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    res.json(updatedAdmin);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

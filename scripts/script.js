@@ -90,6 +90,8 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
           if (res.ok) { // Check if the HTTP response status is in the 200–299 range, indicating success.
             
             sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
+            sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
+            sessionStorage.setItem("userRole", data.role); // store user role 
 
             window.location.href = "main.html"; // Redirect the user to the main application page (frontend path).
           } else { // If the login attempt failed (bad credentials or other issue)...
