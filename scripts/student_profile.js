@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const userEmail = sessionStorage.getItem('userEmail');
+    const userId = sessionStorage.getItem('userId');
     const userRole = sessionStorage.getItem('userRole');
     
-    if (!userEmail) {
-      alert('Please login first');
-      window.location.href = 'login.html';
-      return;
+    if (!userId) {
+        alert('Please login first');
+        window.location.href = 'login.html';
+        return;
     }
-        
+    
     if (userRole !== 'student') {
         alert('This page is for students only');
         window.location.href = 'admin_profile.html';
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load existing profile data
-    fetch(`/profile/${userEmail}`)
+    fetch(`/profile/${userId}`)
         .then(response => {
             if (!response.ok) throw new Error('Failed to load profile');
             return response.json();
@@ -49,14 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form Submission Handler
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const userEmail = sessionStorage.getItem('userEmail');
-        if (!userEmail) {
-            alert('Please login first');
-            window.location.href = 'login.html';
-            return;
-        }
-        
+
         // Get form data
         const formData = {
             name: document.getElementById('fullName').value,
@@ -64,13 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
             program: document.getElementById('program').value,
             year: document.getElementById('year').value
         };
-        
+
         const saveBtn = document.querySelector('.btn-save');
         saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
         saveBtn.disabled = true;
-        
-        // Send data to server
-        fetch(`/profile/student/${userEmail}`, {
+
+        // Send updated data
+        fetch(`/profile/student/${userId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -83,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(() => {
             saveBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Saved!';
-            // Update displayed name
             document.getElementById('studentName').textContent = formData.name;
             setTimeout(() => {
                 saveBtn.innerHTML = '<i class="bi bi-save-fill me-2"></i> Save Profile';
