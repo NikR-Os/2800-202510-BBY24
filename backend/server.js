@@ -280,13 +280,15 @@ io.on("connection", (socket) => {
 });
 
 // PROFILE ROUTES
-// Get user profile data
-app.get('/profile/:email', async (req, res) => {
+// Get user profile data (Student or Admin)
+app.get('/profile/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log("Received profile request for ID:", id);
+
   try {
-    const { email } = req.params;
-    
-    // Check if it's a student
-    const student = await Student.findOne({ email });
+    // Check if the user is a student
+    const student = await Student.findById(id);
+     console.log("Student found:", student); 
     if (student) {
       return res.json({
         name: student.name,
@@ -297,9 +299,10 @@ app.get('/profile/:email', async (req, res) => {
         courses: student.courses || []
       });
     }
-    
-    // Check if it's an admin
-    const admin = await Admin.findOne({ email });
+
+    // If it's not a student, check if it's an admin
+    const admin = await Admin.findById(id);
+       console.log("Admin found:", admin);
     if (admin) {
       return res.json({
         name: admin.name,
@@ -310,29 +313,37 @@ app.get('/profile/:email', async (req, res) => {
         courses: admin.courses || []
       });
     }
-    
-    return res.status(404).json({ message: 'User not found' });
+
+    // If neither student nor admin was found, return 404
+    res.status(404).json({ message: 'User not found' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Update student profile
-app.put('/profile/student/:email', async (req, res) => {
+// Function to update profile (Student or Admin)
+const updateProfile = async (model, id, updates) => {
   try {
-    const { email } = req.params;
-    const { name, program, year, courses } = req.body;
-    
-    const updatedStudent = await Student.findOneAndUpdate(
-      { email },
-      { name, program, year, courses },
-      { new: true }
-    );
-    
+    const updatedUser = await model.findOneAndUpdate({ _id: id }, updates, { new: true });
+    if (!updatedUser) {
+      return null; // Not found
+    }
+    return updatedUser;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// Update student profile
+app.put('/profile/student/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, program, year, courses } = req.body;
+
+  try {
+    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses });
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    
     res.json(updatedStudent);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -340,21 +351,15 @@ app.put('/profile/student/:email', async (req, res) => {
 });
 
 // Update admin profile
-app.put('/profile/admin/:email', async (req, res) => {
+app.put('/profile/admin/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, department, position, courses } = req.body;
+
   try {
-    const { email } = req.params;
-    const { name, department, position, courses } = req.body;
-    
-    const updatedAdmin = await Admin.findOneAndUpdate(
-      { email },
-      { name, department, position, courses },
-      { new: true }
-    );
-    
+    const updatedAdmin = await updateProfile(Admin, id, { name, department, position, courses });
     if (!updatedAdmin) {
       return res.status(404).json({ message: 'Admin not found' });
     }
-    
     res.json(updatedAdmin);
   } catch (error) {
     res.status(400).json({ message: error.message });

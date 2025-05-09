@@ -1,20 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const userEmail = sessionStorage.getItem('userEmail');
+    const userId = sessionStorage.getItem('userId');
     const userRole = sessionStorage.getItem('userRole');
-    
-    if (!userEmail) {
-      alert('Please login first');
-      window.location.href = 'login.html';
-      return;
+
+    if (!userId) {
+        alert('Please login first');
+        window.location.href = 'login.html';
+        return;
     }
-  
+
     if (userRole !== 'admin') {
-      alert('You do not have admin privileges');
-      window.location.href = 'student_profile.html'; 
-      return;
+        alert('You do not have admin privileges');
+        window.location.href = 'student_profile.html';
+        return;
     }
-    
-    // DOM Elements
+
     const profileForm = document.getElementById('profileForm');
     const imageUpload = document.getElementById('imageUpload');
     const addCourseBtn = document.getElementById('addCourseBtn');
@@ -22,31 +21,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const coursesContainer = document.getElementById('coursesContainer');
 
     // Load profile data
-    fetch(`/profile/${userEmail}`)
+    fetch(`/profile/${userId}`)
         .then(response => {
             if (!response.ok) throw new Error('Failed to load profile');
             return response.json();
         })
         .then(userData => {
-            // Populate form fields
             document.getElementById('fullName').value = userData.name || '';
             document.getElementById('email').value = userData.email || '';
             document.getElementById('department').value = userData.department || '';
             document.getElementById('position').value = userData.position || 'Associate Professor';
-            
-            // Update displayed name
+
             document.getElementById('teacherName').textContent = userData.name || 'Admin';
-            
-            // Populate courses
+
             if (userData.courses && userData.courses.length > 0) {
                 coursesContainer.innerHTML = '';
                 userData.courses.forEach(course => {
                     const courseBadge = document.createElement('span');
                     courseBadge.className = 'course-badge';
-                    courseBadge.innerHTML = `
-                        ${course}
-                        <span class="remove-course">×</span>
-                    `;
+                    courseBadge.innerHTML = `${course} <span class="remove-course">×</span>`;
                     coursesContainer.appendChild(courseBadge);
                 });
             }
@@ -55,28 +48,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading profile:', error);
         });
 
-    // Set up remove course handlers for existing courses
     coursesContainer.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-course')) {
             e.target.parentElement.remove();
         }
     });
 
-    // Image Upload Handler 
     imageUpload.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                document.getElementById('profileImage').src = event.target.result;           
+                document.getElementById('profileImage').src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
     });
 
-    // Course Management 
     addCourseBtn.addEventListener('click', addCourse);
-
     newCourseInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -89,31 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (courseCode) {
             const courseBadge = document.createElement('span');
             courseBadge.className = 'course-badge';
-            courseBadge.innerHTML = `
-                ${courseCode}
-                <span class="remove-course">×</span>
-            `;
+            courseBadge.innerHTML = `${courseCode} <span class="remove-course">×</span>`;
             coursesContainer.appendChild(courseBadge);
             newCourseInput.value = '';
         }
     }
 
-    // Form Submission Handler
     profileForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const userEmail = sessionStorage.getItem('userEmail');
-        if (!userEmail) {
-            alert('Please login first');
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        // Get all courses
+
         const courses = Array.from(document.querySelectorAll('.course-badge'))
             .map(badge => badge.firstChild.textContent.trim());
-        
-        // Prepare form data
+
         const formData = {
             name: document.getElementById('fullName').value,
             email: document.getElementById('email').value,
@@ -121,13 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
             position: document.getElementById('position').value,
             courses: courses
         };
-        
+
         const saveBtn = profileForm.querySelector('.btn-save');
         saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
         saveBtn.disabled = true;
-        
-        // Send data to server
-        fetch(`/profile/admin/${userEmail}`, {
+
+        fetch(`/profile/admin/${userId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
