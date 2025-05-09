@@ -50,7 +50,7 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
       alert("Signup successful. Logging you in...");
       // Optionally auto-login after signup
       sessionStorage.setItem("userId", data.userId);
-      window.location.href = "main.html";
+      window.location.href = "adminMain.html";
     } else {
       alert("Signup failed: " + data.message);
     }
