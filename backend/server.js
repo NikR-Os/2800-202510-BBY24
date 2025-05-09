@@ -1,7 +1,9 @@
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");   
-const Student = require('./models/User');               // Import Mongoose for MongoDB
+const Student = require('./models/Student');         // Import Mongoose for MongoDB (student schema)
 console.log("User model loaded:", typeof Student === 'function');
+const Admin = require('./models/Admin');             // Import Mongoose for MongoDB (admin schema)
+console.log("User model loaded:", typeof Admin === 'function');   
 const Session = require('./models/Session');         //  Import the real schema
 
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
@@ -32,7 +34,6 @@ mongoose.connect(mongoURI, {
 // Route: Signup
 app.post('/signup', async (req, res) => {
   console.log("SIGNUP BODY:", req.body);
-
   const { name, email, password } = req.body;
 
   // Basic field check
@@ -40,27 +41,46 @@ app.post('/signup', async (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
+  const type = req.query.type;
+  let role;
+
+  if(type === "student")
+  {
+    role = Student;
+  }
+  else if (type === "admin")
+  {
+    role = Admin;
+  }
+  else
+  {
+    return res.status(410).json({ message: "Invalid type"});
+  }
+
   try {
     // Check if user already exists
-    const existingStudent = await Student.findOne({ email });
-    if (existingStudent) {
-      return res.status(409).json({ message: "Student already exists." });
+    const existingUserEmail = await role.findOne({ email });
+    const existingUserName = await role.findOne({ name })
+    if (existingUserEmail ||
+        existingUserName) 
+    {
+      return res.status(409).json({ message: "User already exists." });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create and save the new user
-    const newStudent = new Student({
+    const newUser = new role({
       name,
       email,
       password: hashedPassword
     });
 
-    await newStudent.save();
+    await newUser.save();
 
     // Respond with success + user ID
-    res.status(200).json({ message: "Signup successful", userId: newStudent._id });
+    res.status(200).json({ message: "Signup successful", userId: newUser._id });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error." });
@@ -186,12 +206,6 @@ app.delete('/sessions/:sessionId', async (req, res) => {
     res.status(500).json({ message: "Failed to delete session." });
   }
 });
-
-// app.use(express.static(path.join(__dirname, 'text')));
-
-// app.use((req, res) => {
-//   res.status(404).sendFile(path.join(__dirname, 'text', '404.html'));
-// });
 
 // Start server
 app.listen(port, () => {
