@@ -10,7 +10,7 @@ async function writeSessions() {
 
     try {
         // 1. Fetch user info from MongoDB
-        const userRes = await fetch(`${baseUrl}/users/${userId}`);
+const userRes = await fetch(`${baseUrl}/profile/${userId}`);
        
         const user = await userRes.json();
 
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         // Fetch the user's document from your MongoDB backend
-        const res = await fetch(`${baseUrl}/users/${userId}`);
+const res = await fetch(`${baseUrl}/profile/${userId}`);
         const userData = await res.json();
 
         const userName = userData.name || "there";       // Fallback name
@@ -151,7 +151,7 @@ async function deleteCurrentUserSession() {
 
     try {
         // Fetch the user's document to get the current session ID
-        const res = await fetch(`${baseUrl}/users/${userId}`);
+const res = await fetch(`${baseUrl}/profile/${userId}`);
         const user = await res.json();
         const session = user.session;
 
