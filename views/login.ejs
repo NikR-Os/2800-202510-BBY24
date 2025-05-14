@@ -1,0 +1,50 @@
+<%- include("template/header") %>
+<div class="split-screen">
+    <!-- Left: App branding -->
+    <div class="left-side">
+      <i class="fas fa-map fa-lg mb-4"></i>
+      Campus Nav
+    </div>
+
+    <!-- Right: Forms -->
+    <div class="right-side">
+      <div class="form-container">
+        <!-- Login Form -->
+        <div id="login-form" style="display: none;">
+          <h3>Log in</h3>
+          <input type="email" id="login-email" placeholder="Email" class="form-control mb-3">
+          <input type="password" id="login-password" placeholder="Password" class="form-control mb-3">
+          <button id="login-submit" class="btn btn-success w-100">Log in</button>
+          <p class="mt-3">Don't have an account? <a href="login.html?action=signup">Create an Account</a></p>
+        </div>
+
+        <div id="sign-up-choices" style="display: none;">
+          <button id="student-signup-choice" class="btn btn-success w-100">Student</button>
+          <button id="admin-signup-choice" class="btn btn-success w-100">Admin</button>
+        </div>
+
+        <div id="student-signup-form" style="display: none;">
+          <h3>Create a Student Account</h3>
+          <input type="text" id="student-signup-name" placeholder="Your Name" class="form-control mb-3">
+          <input type="email" id="student-signup-email" placeholder="Email" class="form-control mb-3">
+          <input type="password" id="student-signup-password" placeholder="Password" class="form-control mb-3">
+          <button id="student-signup-submit" class="btn btn-success w-100">Sign Up</button>
+          <p class="mt-3">Are you an Admin? <a href="login.html?action=admin-signup">Create an Admin Account</a></p>
+          <p class="mt-3">Already have an account? <a href="login.html?action=login">Log in</a></p>
+        </div>
+
+        <div id="admin-signup-form" style="display: none;">
+          <h3>Create an Admin Account</h3>
+          <input type="text" id="admin-signup-name" placeholder="Your Name" class="form-control mb-3">
+          <input type="email" id="admin-signup-email" placeholder="Email" class="form-control mb-3">
+          <input type="password" id="admin-signup-password" placeholder="Password" class="form-control mb-3">
+          <button id="admin-signup-submit" class="btn btn-success w-100">Sign Up</button>
+          <p class="mt-3">Are you a Student? <a href="login.html?action=student-signup">Create a Student Account</a></p>
+          <p class="mt-3">Already have an account? <a href="login.html?action=login">Log in</a></p>
+        </div>
+
+        <div id="loader" style="display: none;">Loading...</div>
+      </div>
+    </div>
+  </div>
+<%- include("template/footer") %>

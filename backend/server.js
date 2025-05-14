@@ -11,12 +11,15 @@ console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
+const path = require('path');
 
 const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../'));
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
                              
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
@@ -373,6 +376,35 @@ app.put('/profile/admin/:id', async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+});
+
+app.get('/', (req, res) => {
+  res.render('index', { 
+    user: req.session.user || null, 
+    scripts: ['skeleton.js', 'script.js'] 
+  });
+});
+app.get('/main', (req, res) => {
+  res.render('main',{
+    scripts: ['main.js', 'script.js', 
+      'skeleton.js', 'session.js',
+      'chatbox.js', 'location.js']
+  });
+});
+app.get('/setting', (req, res) => {
+  res.render('setting', {
+    scripts: 'setting.js'
+  });
+});
+app.get('/login', (req, res) => {
+  res.render('login', {
+    scripts: ['skeleton.js', 'script.js']
+  });
+});
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
 });
 
 server.listen(port, () => {

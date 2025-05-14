@@ -1,0 +1,29 @@
+<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+    style="margin-top: auto;">
+    <p class="col-md-4 mb-0 text-muted">&copy; StudyNav</p>
+    <a href="#"
+        class="col-md-4 d-flex align-items-center justify-content-end mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+        <i class="fa-brands fa-facebook me-3"></i>
+        <i class="fa-brands fa-instagram me-3"></i>
+        <i class="fa-brands fa-linkedin"></i>
+        <svg class="bi me-2" width="40" height="32">
+            <use xlink:href="#bootstrap" />
+        </svg>
+    </a>
+</footer>
+
+
+<!---------------------------------------------->
+<!-- Your own JavaScript functions go here    -->
+<!---------------------------------------------->
+
+<!-- Link to scripts of your own -->
+<!-- <script src="./scripts/script.js"></script> -->
+<% if (scripts) { %>
+  <% scripts.forEach(function(script) { %>
+    <script src="<%= /scripts/ script %>"></script>
+  <% }); %>
+<% } %>
+
+</body>
+</html>

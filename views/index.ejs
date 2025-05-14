@@ -1,0 +1,27 @@
+<%- include("template/header") %>
+<nav id="navbarPlaceholder"></nav>
+
+    <main class="flex-grow-1 container py-4">
+      <!-- Welcome Section -->
+      <div class="welcome-section text-center">
+          <h1 id="greeting" class="display-5 fw-bold">Welcome to StudyNav!</h1>
+          <p class="lead">Find your perfect study space at BCIT</p>
+          
+          <!-- Study Image -->
+          <img src="images/Frame1.png" 
+               alt="BCIT students studying together"
+               class="study-hero-img"
+               loading="eager">
+      </div>
+      
+      <!-- Auth Buttons -->
+      <div class="button-container d-flex flex-md-row flex-column justify-content-center gap-3">
+        <a id="create-account-btn" class="btn btn-success btn-lg px-4 mb-md-0 mb-2" href="/login?action=signup">
+          <i class="fas fa-user-plus me-2"></i> Sign Up
+        </a>
+          <a id="login-btn" class="btn btn-outline-success btn-lg px-4" href="/login?action=login">
+              <i class="fas fa-sign-in-alt me-2"></i> Log In
+          </a>
+      </div>
+  </main>
+<%- include("template/footer") %>

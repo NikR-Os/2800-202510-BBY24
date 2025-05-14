@@ -1,0 +1,28 @@
+<%- include("template/header") %>
+<div class="jumbotron mt-5">
+    <h1 class="display-4">Setting</h1>
+    <p class="lead">Customize your app</p>
+    <hr class="my-4">
+  </div>
+
+  <div class="setting ">
+    <p>Dark mode - set page to black to be easier to light sensitive eyes</p>
+    <button class="btn btn-dark" id="themeBtn">Dark mode</button>
+    <br>
+    <div id="font-button">
+      <button class="btn btn-success" id="increaseFontBtn">Bigger font</button>
+      <button class="btn btn-warning" id="desceaseFontBtn">Smaller font</button>
+    </div>
+    <div class="dropdown" data-bs-theme="light">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        Color selection
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <li><a class="dropdown-item active" href="#" data-mode="true">True</a></li>
+        <li><a class="dropdown-item" href="#" data-mode="protanopia">Protanopia</a></li>
+        <li><a class="dropdown-item" href="#" data-mode="tritanopia">Tritanopia</a></li>
+        <li><a class="dropdown-item" href="#" data-mode="deuteranopia">Deuteranopia</a></li>
+      </ul>
+    </div>
+  </div>
+<%- include("template/footer") %>
