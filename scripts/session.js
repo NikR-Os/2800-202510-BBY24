@@ -10,8 +10,8 @@ async function writeSessions() {
 
     try {
         // 1. Fetch user info from MongoDB
-const userRes = await fetch(`${baseUrl}/profile/${userId}`);
-       
+        const userRes = await fetch(`${baseUrl}/profile/${userId}`);
+
         const user = await userRes.json();
 
         const userName = user.name;
@@ -45,8 +45,8 @@ const userRes = await fetch(`${baseUrl}/profile/${userId}`);
             const session = sessionData._id;
 
             // 4. Update the user’s document with the session ID
-            await fetch(`${baseUrl}/users/${userId}/session`, {
-                method: "PATCH",
+            await fetch(`${baseUrl}/profile/student/${userId}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -83,35 +83,42 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================================
 document.addEventListener("DOMContentLoaded", async () => {
 
-    // Get references to the DOM elements that will show the session status
     const baseUrl = window.location.origin;
-    const indicator = document.getElementById("session-indicator");         // The coloured dot
-    const label = document.getElementById("session-indicator-label");       // The text beside the dot
-    const deleteBtn = document.getElementById("delete-session-btn");        // The delete session button
-    const statusMessageElem = document.getElementById("session-status-message"); // Message below the indicator
-    const userId = sessionStorage.getItem("userId"); // Retrieve the user's ID from sessionStorage
+    const indicator = document.getElementById("session-indicator");
+    const label = document.getElementById("session-indicator-label");
+    const deleteBtn = document.getElementById("delete-session-btn");
+    const statusMessageElem = document.getElementById("session-status-message");
+    const userId = sessionStorage.getItem("userId");
+
+    if (!indicator || !label || !deleteBtn || !statusMessageElem) {
+        console.warn("[SessionIndicator] Missing one or more UI elements");
+        return;
+    }
+
     if (!userId) {
-        console.warn("No userId found in sessionStorage.");
+        console.warn("[SessionIndicator] No userId found in sessionStorage");
         return;
     }
 
     try {
-        // Fetch the user's document from your MongoDB backend
-const res = await fetch(`${baseUrl}/profile/${userId}`);
+        console.log(`[SessionIndicator] Fetching profile for userId: ${userId}`);
+        const res = await fetch(`${baseUrl}/profile/${userId}`);
         const userData = await res.json();
+        console.log("[SessionIndicator] User profile fetched:", userData);
 
-        const userName = userData.name || "there";       // Fallback name
-        const session = userData.session;              // The session ID stored in user doc
+        const userName = userData.name || "there";
+        const session = userData.session;
+        console.log(`[SessionIndicator] Extracted session ID: ${session}`);
 
         if (session) {
-            // Fetch the session document if user has one
+            console.log(`[SessionIndicator] Fetching session data for ID: ${session}`);
             const sessionRes = await fetch(`${baseUrl}/sessions/${session}`);
             const sessionData = await sessionRes.json();
+            console.log("[SessionIndicator] Session data:", sessionData);
 
-            const startTime = new Date(sessionData.timestamp); // Convert timestamp to Date
+            const startTime = new Date(sessionData.timestamp);
             const length = sessionData.length;
 
-            // Calculate session end time
             let endTime = new Date(startTime);
             if (length === "30 minutes") endTime.setMinutes(endTime.getMinutes() + 30);
             else if (length === "1 hour") endTime.setHours(endTime.getHours() + 1);
@@ -119,24 +126,26 @@ const res = await fetch(`${baseUrl}/profile/${userId}`);
 
             const endTimeString = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            console.log(`[SessionIndicator] Active session ends at ${endTimeString}`);
+
             scheduleSessionExpiration(endTime);
 
-            //  Update the UI for an active session
             indicator.style.backgroundColor = "green";
             label.textContent = "Active Session";
             deleteBtn.style.display = "inline-block";
             statusMessageElem.textContent = `Hey ${userName}, your ${length} session ends at ${endTimeString}.`;
         } else {
-            //  User has no session — show inactive UI
+            console.log(`[SessionIndicator] No session ID found for user ${userName}`);
             indicator.style.backgroundColor = "red";
             label.textContent = "No Active Session";
             deleteBtn.style.display = "none";
             statusMessageElem.textContent = `Hey ${userName}, you have no active sessions.`;
         }
     } catch (err) {
-        console.error("Failed to load session data:", err);
+        console.error("[SessionIndicator] Error loading session data:", err);
     }
 });
+
 
 // ================================
 // Delete Current Session
@@ -151,7 +160,7 @@ async function deleteCurrentUserSession() {
 
     try {
         // Fetch the user's document to get the current session ID
-const res = await fetch(`${baseUrl}/profile/${userId}`);
+        const res = await fetch(`${baseUrl}/profile/${userId}`);
         const user = await res.json();
         const session = user.session;
 
@@ -166,8 +175,8 @@ const res = await fetch(`${baseUrl}/profile/${userId}`);
         });
 
         // Clear the session field from the user document
-        await fetch(`${baseUrl}/users/${userId}/session`, {
-            method: "PATCH",
+        await fetch(`${baseUrl}/profile/student/${userId}`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session: null })
         });

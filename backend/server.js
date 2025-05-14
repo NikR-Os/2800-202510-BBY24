@@ -322,7 +322,9 @@ app.get('/profile/:id', async (req, res) => {
         role: 'student',
         program: student.program,
         year: student.year,
-        courses: student.courses || []
+        courses: student.courses || [],
+        session: student.session || null    // ADDED THIS LINE
+
       });
     }
 
@@ -363,10 +365,10 @@ const updateProfile = async (model, id, updates) => {
 // Update student profile
 app.put('/profile/student/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, program, year, courses } = req.body;
+  const { name, program, year, courses, session } = req.body;
 
   try {
-    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses });
+    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses, session });
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
