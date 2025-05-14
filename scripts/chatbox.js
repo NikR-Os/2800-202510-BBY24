@@ -45,7 +45,7 @@ function toggleChatForm() {
 window.addEventListener("DOMContentLoaded", async () => {
   try {
     console.log("Fetching user details from DB for:", currentUserId);
-    const response = await fetch(`/users/${currentUserId}`);
+const response = await fetch(`/profile/${currentUserId}`);
     const data = await response.json();
     currentUserName = data.name;
     console.log("Fetched current username from DB:", currentUserName);
