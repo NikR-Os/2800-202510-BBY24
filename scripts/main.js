@@ -87,7 +87,7 @@ showMap();
 
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({center: userLocation, zoom: 15})
+        map.flyTo({ center: userLocation, zoom: 15 })
     })
 }
 
@@ -149,13 +149,11 @@ function addSessionPins(map, sessions) {
 
         map.addLayer({
             'id': 'session-pins',
-            'type': 'circle',
+            'type': 'symbol',
             'source': 'sessions',
-            'paint': {
-                'circle-color': 'orange',
-                'circle-radius': 10,
-                'circle-stroke-width': 4,
-                'circle-stroke-color': '#ffffff'
+            'layout': {
+                'icon-image': 'pin', // reference the image
+                'icon-size': 1.75
             }
         });
 
@@ -217,7 +215,7 @@ function showPoint(map, point) {
         //a point is added via a layer
         map.addLayer({
             id: 'point',
-            type: 'circle',
+            type: 'symbol',
             source: {
                 type: 'geojson',
                 data: {
