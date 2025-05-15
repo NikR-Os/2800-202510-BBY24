@@ -10,7 +10,8 @@ const sessionSchema = new mongoose.Schema({
     length: { type: String, required: true },
     timestamp: { type: Date, required: true },
     members: [{ type: String, required: true }], // Array of userIds
-    course: { type: String, default: null } // Optional course field
+    course: { type: String, default: null },
+    program: { type: String, required: true }
 });
 
 module.exports = mongoose.model("Session", sessionSchema);

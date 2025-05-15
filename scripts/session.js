@@ -25,6 +25,15 @@ async function writeSessions() {
             };
 
             // 3. Create the session in MongoDB
+            // Get program from sessionStorage
+            const program = sessionStorage.getItem("programName");
+            console.log("[writeSessions] Using program name from sessionStorage:", program);
+
+            if (!program) {
+                alert("Program name not set. Did you enter the group code?");
+                return;
+            }
+
             const sessionRes = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
                 headers: {
@@ -37,9 +46,11 @@ async function writeSessions() {
                     length: selectedLength,
                     timestamp: new Date().toISOString(),
                     members: [userId],
-                    course: null //  TEMP placeholder until form field is added
+                    course: null, // still temporary
+                    program // ⬅️ added here
                 })
             });
+
 
             const sessionData = await sessionRes.json();
             const session = sessionData._id;

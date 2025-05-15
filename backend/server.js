@@ -118,8 +118,10 @@ app.post('/login', async (req, res) => {
     res.status(200).json({
       userId: user._id,
       name: user.name,
-      role: role
+      role: role,
+      program: user.program || null
     });
+
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error." });
@@ -189,7 +191,8 @@ app.post('/sessions', async (req, res) => {
       length,
       timestamp,
       members,
-      course
+      course,
+      program
     } = req.body;
 
     const newSession = new Session({
@@ -199,8 +202,10 @@ app.post('/sessions', async (req, res) => {
       length,
       timestamp,
       members,
-      course
+      course,
+      program //ADD THIS
     });
+
 
     const savedSession = await newSession.save();
     res.status(201).json(savedSession);
@@ -393,6 +398,20 @@ app.put('/profile/admin/:id', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+const Program = require('./models/Program'); // ⬅️ If not already present
+
+app.get('/programs/:code', async (req, res) => {
+  try {
+    const program = await Program.findOne({ code: req.params.code });
+    if (!program) return res.status(404).json({ message: "Program not found." });
+    res.json(program);
+  } catch (err) {
+    console.error("Program lookup error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -160,9 +160,16 @@
       </div>
 
     </div>
-    <!-- Recenter -->
-    <div>
+
+
+    <div id="map-controls" style="margin: 20px 0;">
       <button id="recenter-button">Recenter The Map</button>
+      <button id="enter-program-btn">Add Program</button>
+      <div id="program-code-form" style="display: none;" class="mt-2">
+        <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code" />
+        <button id="submitProgramCodeBtn" class="btn btn-primary mt-2">Submit</button>
+      </div>
+
     </div>
 
     <div id="pop-menu">
@@ -211,6 +218,8 @@
       <script src="/socket.io/socket.io.js"></script>
       <script src="./scripts/chatbox.js"></script>
       <script src="./scripts/location.js"></script>
+            <script src="./scripts/program.js"></script>
+
 
 
 
