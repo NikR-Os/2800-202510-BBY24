@@ -434,6 +434,49 @@ app.get('/profile/:id/image', async (req, res) => {
   }
 });
 
+// Profile Deletion Route
+app.delete('/profile/:id', async (req, res) => {
+  const { id } = req.params;
+
+  // Validate ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Invalid user ID format' 
+    });
+  }
+
+  try {
+    // Try deleting as student first
+    const deletedStudent = await Student.findByIdAndDelete(id);
+    
+    // If not found as student, try as admin
+    if (!deletedStudent) {
+      const deletedAdmin = await Admin.findByIdAndDelete(id);
+      if (!deletedAdmin) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'User not found in either Student or Admin collections' 
+        });
+      }
+    }
+
+    // Success response
+    return res.status(200).json({ 
+      success: true,
+      message: 'Profile deleted successfully' 
+    });
+
+  } catch (error) {
+    console.error("Profile deletion error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during profile deletion',
+      error: error.message 
+    });
+  }
+});
+
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

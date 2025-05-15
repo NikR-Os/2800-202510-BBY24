@@ -209,4 +209,57 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 1500);
         }
     });
+
+    // 6. Delete Profile
+// 1. This shows the confirmation modal when delete button is clicked
+document.getElementById('deleteProfileBtn').addEventListener('click', () => {
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteProfileModal'));
+  deleteModal.show();
+});
+
+// 2. This handles the actual deletion when user confirms
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  const deleteBtn = document.getElementById('confirmDeleteBtn');
+  const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteProfileModal'));
+  
+  try {
+    // Show loading state
+    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Deleting...';
+    deleteBtn.disabled = true;
+
+    const response = await fetch(`/profile/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}` // If using tokens
+      }
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to delete profile');
+    }
+
+    // Clear session and redirect on success
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    
+  } catch (error) {
+    console.error('Profile deletion error:', error);
+    
+    // Show error to user
+    const errorMessage = error.message.includes('User not found') 
+      ? 'Your account was not found in our system' 
+      : `Deletion failed: ${error.message}`;
+    
+    alert(errorMessage);
+    
+    // Reset button state
+    deleteBtn.innerHTML = 'Delete Profile';
+    deleteBtn.disabled = false;
+    
+    // Keep modal open to allow retry
+  }
+});
 });

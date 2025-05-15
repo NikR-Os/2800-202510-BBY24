@@ -170,4 +170,44 @@ document.getElementById('imageUpload').addEventListener('change', async function
       }, 1500);
     }
   });
+  // Add this with your other event listeners
+document.getElementById('deleteProfileBtn').addEventListener('click', () => {
+  // Show confirmation modal
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteProfileModal'));
+  deleteModal.show();
+});
+
+// 6. Delete Profile with confirmation
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  const deleteBtn = document.getElementById('confirmDeleteBtn');
+  try {
+    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Deleting...';
+    deleteBtn.disabled = true;
+
+    const response = await fetch(`/profile/${userId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Deletion failed');
+    }
+
+    // Clear session and redirect
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    
+  } catch (error) {
+    console.error('Profile deletion error:', error);
+    alert(`Profile deletion failed: ${error.message}`);
+    
+    // Reset button state
+    deleteBtn.innerHTML = 'Delete Profile';
+    deleteBtn.disabled = false;
+    
+    // Hide modal
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteProfileModal'));
+    deleteModal.hide();
+  }
+});
 });
