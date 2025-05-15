@@ -11,7 +11,8 @@ console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
-
+const multer = require("multer");                  // Import multer for file uploads
+const path = require("path");                      // Import path for file paths
 const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,6 +29,14 @@ mongoose.connect(mongoURI, {
 })
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB connection error:", err));
+
+// Set up multer for file uploads
+const storage = multer.memoryStorage(); // Store files in memory as Buffer
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
 
 // Route: Signup
 app.post('/signup', async (req, res) => {
@@ -367,10 +376,62 @@ app.put('/profile/admin/:id', async (req, res) => {
   }
 });
 
-app.get('/logout', (req, res) => {
-  res.clearCookie('token'); // clear JWT or session token, if it's used
-  res.clearCookie('connect.sid'); // clear express-session cookie, just in case
-  res.status(200).json({ message: "Logged out successfully" });
+// Upload profile image
+app.post('/profile/:id/image', upload.single('image'), async (req, res) => {
+  const { id } = req.params;
+  
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  try {
+    const imageData = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype
+    };
+
+    // Update student or admin with the image
+    const studentUpdate = await Student.findByIdAndUpdate(id, { image: imageData }, { new: true });
+    if (studentUpdate) {
+      return res.status(200).json({ message: 'Image uploaded successfully' });
+    }
+
+    const adminUpdate = await Admin.findByIdAndUpdate(id, { image: imageData }, { new: true });
+    if (adminUpdate) {
+      return res.status(200).json({ message: 'Image uploaded successfully' });
+    }
+
+    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get profile image
+app.get('/profile/:id/image', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check student first
+    const student = await Student.findById(id);
+    if (student && student.image) {
+      res.set('Content-Type', student.image.contentType);
+      return res.send(student.image.data);
+    }
+
+    // Then check admin
+    const admin = await Admin.findById(id);
+    if (admin && admin.image) {
+      res.set('Content-Type', admin.image.contentType);
+      return res.send(admin.image.data);
+    }
+
+    // Return default image if no image found
+    const defaultImagePath = path.join(__dirname,  'images', 'default.avif');
+    return res.sendFile(defaultImagePath);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 server.listen(port, () => {

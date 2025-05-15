@@ -22,17 +22,61 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 3. Image Upload Handler 
-  document.getElementById('imageUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        document.getElementById('profileImage').src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+document.getElementById('imageUpload').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) {
+    alert('No file selected');
+    return;
+  }
 
+  // File type validation
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg', 'image/avif'];
+  if (!validTypes.includes(file.type)) {
+    alert('Please upload a valid image file (JPEG, PNG, GIF, WEBP)');
+    return;
+  }
+
+  // File size validation (5MB limit)
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert('Image must be smaller than 5MB');
+    return;
+  }
+
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    document.getElementById('profileImage').src = event.target.result;
+  };
+  reader.readAsDataURL(file); // Moved outside onload
+
+  const imgUploadBtn = document.querySelector('.edit-photo-btn');
+  const originalBtnContent = imgUploadBtn.innerHTML;
+  imgUploadBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i> Uploading...';
+  imgUploadBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`/profile/${userId}/image`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Image upload failed');
+    }
+  } catch (error) {
+    console.error('Image upload error:', error);
+    alert(`Failed to upload image: ${error.message}`);
+  } finally {
+    imgUploadBtn.innerHTML = originalBtnContent;
+    imgUploadBtn.disabled = false;
+  }
+});
+  
   // 4. Load Profile Data 
   try {
     const response = await fetch(`/profile/${userId}`);
@@ -57,6 +101,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       sessionStorage.setItem('userRole', userData.role);
     }
 
+    try {
+      const imgResponse = await fetch(`/profile/${userId}/image`);
+      if (imgResponse.ok) {
+        const blob = await imgResponse.blob();
+        const newSrc = URL.createObjectURL(blob);
+        const imgElement = document.getElementById('profileImage');
+        const oldSrc = imgElement.src;
+        imgElement.src = newSrc;
+        if (oldSrc.startsWith('blob:')) {
+          URL.revokeObjectURL(oldSrc);
+        }
+      }
+    } catch (imgError) {
+      console.error('Error loading profile image:', imgError);
+      alert('Failed to load profile image. Please try again.');
+    }
   } catch (error) {
     console.error('Profile load error:', error);
     alert('Failed to load profile. Please try again.');

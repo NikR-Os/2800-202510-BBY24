@@ -49,7 +49,11 @@ const studentSchema = new mongoose.Schema({
     type: Number,
     default: 1,
     required: true
-  }  
+  },
+  image: {
+    data: Buffer,
+    contentType: String
+  }
 });
 
 module.exports = mongoose.model("Student", studentSchema);
