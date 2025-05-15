@@ -119,8 +119,10 @@ app.post('/login', async (req, res) => {
       userId: user._id,
       name: user.name,
       role: role,
-      program: user.program || null
+      program: user.program || null,
+      courses: user.courses || null
     });
+
 
   } catch (err) {
     console.error("Login error:", err);
@@ -192,7 +194,8 @@ app.post('/sessions', async (req, res) => {
       timestamp,
       members,
       course,
-      program
+      program,
+      courses
     } = req.body;
 
     const newSession = new Session({
@@ -203,8 +206,10 @@ app.post('/sessions', async (req, res) => {
       timestamp,
       members,
       course,
-      program //ADD THIS
+      program,
+      courses
     });
+
 
 
     const savedSession = await newSession.save();

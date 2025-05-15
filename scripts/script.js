@@ -92,8 +92,10 @@ document.addEventListener("DOMContentLoaded", () => { //Waits until the entire H
           sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
           sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
           sessionStorage.setItem("userRole", data.role); // store user role 
-          sessionStorage.setItem("programName", data.program); // <- Set at login 
+          sessionStorage.setItem("programName", data.program); 
           console.log("[Login] Program name set in sessionStorage:", data.program);
+          sessionStorage.setItem("courses", JSON.stringify(data.courses));
+          console.log("[Login] Stored courses:", data.courses);
 
           if (data.role === "admin") {
             window.location.href = "adminMain.html";

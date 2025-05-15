@@ -29,6 +29,13 @@ async function writeSessions() {
             const program = sessionStorage.getItem("programName");
             console.log("[writeSessions] Using program name from sessionStorage:", program);
 
+            const courses = JSON.parse(sessionStorage.getItem("courses"));
+            if (courses) {
+                console.log("[writeSessions] Including courses in session:", courses);
+            } else {
+                console.warn("[writeSessions] No courses found in sessionStorage");
+            }
+
             if (!program) {
                 alert("Program name not set. Did you enter the group code?");
                 return;
@@ -46,8 +53,9 @@ async function writeSessions() {
                     length: selectedLength,
                     timestamp: new Date().toISOString(),
                     members: [userId],
-                    course: null, // still temporary
-                    program // ⬅️ added here
+                    course: null,
+                    courses, 
+                    program 
                 })
             });
 

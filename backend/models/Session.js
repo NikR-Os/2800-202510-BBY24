@@ -11,6 +11,7 @@ const sessionSchema = new mongoose.Schema({
     timestamp: { type: Date, required: true },
     members: [{ type: String, required: true }], // Array of userIds
     course: { type: String, default: null },
+    courses: { type: [String], default: [] },
     program: { type: String, required: true }
 });
 
