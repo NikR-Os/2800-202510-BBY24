@@ -138,45 +138,55 @@ function addSessionPins(map, sessions) {
     }).filter(feature => feature !== null);
 
     map.on('load', () => {
-        // Add features (pins) to the map
-        map.addSource('sessions', {
-            'type': 'geojson',
-            'data': {
-                'type': 'FeatureCollection',
-                'features': features
-            }
-        });
 
-        map.addLayer({
-            'id': 'session-pins',
-            'type': 'symbol',
-            'source': 'sessions',
-            'layout': {
-                'icon-image': 'pin', // reference the image
-                'icon-size': 1.75
-            }
-        });
+        map.loadImage(
+            'http://localhost:8000/images/default_pin.png',
+            (error, image) => {
+                if (error) throw error;
 
-        // Create popups for session markers
-        map.on('click', 'session-pins', (e) => {
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const { description, owner, email } = e.features[0].properties;
+                // Add the image to the map style.
+                map.addImage('default_pin', image);
+                // Add features (pins) to the map
+                map.addSource('sessions', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': features
+                    }
+                });
 
-            new mapboxgl.Popup()
-                .setLngLat(coordinates)
-                .setHTML(`${description} created by ${owner} (${email})`)
-                .addTo(map);
-        });
+                map.addLayer({
+                    'id': 'session-pins',
+                    'type': 'symbol',
+                    'source': 'sessions',
+                    'layout': {
+                        'icon-image': 'default_pin', // reference the image
+                        'icon-size': 0.025,
+                        'icon-rotate': 180
+                    }
+                });
 
-        // Change the cursor to a pointer when hovering over the pins
-        map.on('mouseenter', 'session-pins', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
+                // Create popups for session markers
+                map.on('click', 'session-pins', (e) => {
+                    const coordinates = e.features[0].geometry.coordinates.slice();
+                    const { description, owner, email } = e.features[0].properties;
 
-        // Reset cursor when not hovering
-        map.on('mouseleave', 'session-pins', () => {
-            map.getCanvas().style.cursor = '';
-        });
+                    new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(`${description} created by ${owner} (${email})`)
+                        .addTo(map);
+                });
+
+                // Change the cursor to a pointer when hovering over the pins
+                map.on('mouseenter', 'session-pins', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Reset cursor when not hovering
+                map.on('mouseleave', 'session-pins', () => {
+                    map.getCanvas().style.cursor = '';
+                });
+            });
     });
 }
 
@@ -215,7 +225,7 @@ function showPoint(map, point) {
         //a point is added via a layer
         map.addLayer({
             id: 'point',
-            type: 'symbol',
+            type: 'circle',
             source: {
                 type: 'geojson',
                 data: {
