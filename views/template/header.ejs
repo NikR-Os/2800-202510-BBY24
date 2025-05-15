@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -18,13 +17,17 @@
   integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
   <!-- Other libraries go here -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
 
   <!-- Link to styles of your own -->
   <!-- <link rel="stylesheet" href="./styles/style.css"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="./styles/style.css">
-  <link rel="stylesheet" href="./styles/style_setting.css">
+  <% if (styles) { %>
+    <% styles.forEach(function(styles) { %>
+      <link rel="stylesheet" href="./styles/<%= styles %>"></link>
+    <% }); %>
+  <% } %>
 
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
@@ -33,7 +36,8 @@
 </head>
 
 <body>
-        <% if (user) { %>
-            <%- include("template/nav_after_login") %>
-        <% } else { %>
-            <%- include("template/nav_before_login") } %>
+  <% if (user) { %>
+    <%- include("nav_after_login") %>
+  <% } else { %>
+    <%- include("nav_before_login") %>
+  <% } %>

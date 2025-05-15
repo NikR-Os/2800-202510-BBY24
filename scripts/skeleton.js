@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const action = urlParams.get('action'); // look for ?action=signup or ?action=login
 
 document.getElementById("student-signup-choice").addEventListener("click", () => {
-  window.location.assign("login.html?action=student-signup")
+  window.location.assign("/login?action=student-signup")
 });
 document.getElementById("admin-signup-choice").addEventListener("click", () => {
-  window.location.assign("login.html?action=admin-signup")
+  window.location.assign("/login?action=admin-signup")
 });
 
   // Show the correct form based on the URL

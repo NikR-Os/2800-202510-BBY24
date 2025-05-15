@@ -19,11 +19,14 @@
 
 <!-- Link to scripts of your own -->
 <!-- <script src="./scripts/script.js"></script> -->
-<% if (scripts) { %>
+<% if (scripts && Array.isArray(scripts)) { %>
   <% scripts.forEach(function(script) { %>
-    <script src="<%= /scripts/ script %>"></script>
+    <script src="<%= script %>"></script>
   <% }); %>
 <% } %>
+
+
+
 
 </body>
 </html>

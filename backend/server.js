@@ -19,22 +19,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../'));
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'))
                              
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("Connected to MongoDB"))
-.catch(err => console.error("MongoDB connection error:", err));
-
-
-
+mongoose.connect(mongoURI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
 // Route: Signup
 app.post('/signup', async (req, res) => {
@@ -49,17 +43,14 @@ app.post('/signup', async (req, res) => {
   const type = req.query.type;
   let role;
 
-  if(type === "student")
-  {
+  if (type === "student") {
     role = Student;
   }
-  else if (type === "admin")
-  {
+  else if (type === "admin") {
     role = Admin;
   }
-  else
-  {
-    return res.status(410).json({ message: "Invalid type"});
+  else {
+    return res.status(410).json({ message: "Invalid type" });
   }
 
   try {
@@ -67,8 +58,7 @@ app.post('/signup', async (req, res) => {
     const existingUserEmail = await role.findOne({ email });
     const existingUserName = await role.findOne({ name })
     if (existingUserEmail ||
-        existingUserName) 
-    {
+      existingUserName) {
       return res.status(409).json({ message: "User already exists." });
     }
 
@@ -100,33 +90,54 @@ app.post('/login', async (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found." });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ message: "Invalid credentials." });
-  }
-
-  res.status(200).json({ userId: user._id, name: user.name, role: user.role});
-});
-
-//  Route: Get user document by ID
-app.get('/users/:userId', async (req, res) => {
-  const { userId } = req.params;
-
   try {
-    const user = await User.findById(userId);
+    // First, check if email exists in Student collection
+    let user = await Student.findOne({ email });
+    let role = "student";
+
+    // If not in Student, check Admin collection
+    if (!user) {
+      user = await Admin.findOne({ email });
+      role = "admin";
+    }
+
+    // Still no match? User not found
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching user." });
+
+    // Validate password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      role: role
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error." });
   }
 });
+
+//  Route: Get user document by ID
+// app.get('/users/:userId', async (req, res) => {
+//   const { userId } = req.params;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found." });
+//     }
+//     res.status(200).json(user);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching user." });
+//   }
+// });
+
 
 // Route: Update user's session field
 app.patch('/users/:userId/session', async (req, res) => {
@@ -214,12 +225,12 @@ app.delete('/sessions/:sessionId', async (req, res) => {
 
 // Route: Get all sessions
 app.get('/sessions', async (req, res) => {
-    try {
-        const sessions = await Session.find();
-        res.json(sessions);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching sessions." });
-    }
+  try {
+    const sessions = await Session.find();
+    res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching sessions." });
+  }
 });
 
 // Start server
@@ -251,7 +262,7 @@ io.on("connection", (socket) => {
   // Handle incoming private messages
   socket.on("private message", async ({ toUsername, fromUserId, message }) => {
     try {
-      const sender = await User.findById(fromUserId);
+      const sender = await Student.findById(fromUserId);
       if (!sender) {
         console.warn("Sender not found in DB:", fromUserId);
         return;
@@ -300,7 +311,7 @@ app.get('/profile/:id', async (req, res) => {
   try {
     // Check if the user is a student
     const student = await Student.findById(id);
-     console.log("Student found:", student); 
+    console.log("Student found:", student);
     if (student) {
       return res.json({
         name: student.name,
@@ -308,13 +319,15 @@ app.get('/profile/:id', async (req, res) => {
         role: 'student',
         program: student.program,
         year: student.year,
-        courses: student.courses || []
+        courses: student.courses || [],
+        session: student.session || null    // ADDED THIS LINE
+
       });
     }
 
     // If it's not a student, check if it's an admin
     const admin = await Admin.findById(id);
-       console.log("Admin found:", admin);
+    console.log("Admin found:", admin);
     if (admin) {
       return res.json({
         name: admin.name,
@@ -349,10 +362,10 @@ const updateProfile = async (model, id, updates) => {
 // Update student profile
 app.put('/profile/student/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, program, year, courses } = req.body;
+  const { name, program, year, courses, session } = req.body;
 
   try {
-    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses });
+    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses, session });
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
@@ -380,30 +393,34 @@ app.put('/profile/admin/:id', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.render('index', { 
-    user: req.session.user || null, 
-    scripts: ['skeleton.js', 'script.js'] 
+    user: User || null, 
+    scripts: ['/scripts/skeleton.js', '/scripts/script.js'],
+    styles: ['style_index.css']
   });
 });
 app.get('/main', (req, res) => {
   res.render('main',{
-    scripts: ['main.js', 'script.js', 
-      'skeleton.js', 'session.js',
-      'chatbox.js', 'location.js']
+    user: User || null,
+    scripts: ['/scripts/main.js', '/scripts/script.js', 
+      '/scripts/skeleton.js', '/scripts/session.js',
+      '/scripts/chatbox.js', '/scripts/location.js',
+      'https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js',
+      'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'],
+    styles: []
   });
 });
 app.get('/setting', (req, res) => {
   res.render('setting', {
-    scripts: 'setting.js'
+    user: User || null,
+    scripts: ['/scripts/setting.js'],
+    styles: ['style_setting.css']
   });
 });
 app.get('/login', (req, res) => {
   res.render('login', {
-    scripts: ['skeleton.js', 'script.js']
-  });
-});
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');
+    user:null,
+    scripts: ['/scripts/skeleton.js', '/scripts/script.js'],
+    styles: ['style_login.css']
   });
 });
 
