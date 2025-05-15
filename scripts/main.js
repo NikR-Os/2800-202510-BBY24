@@ -392,12 +392,22 @@ function toggleForm() {
 
 function toggleMotivationBar() {
   const bar = document.getElementById("motivationBar");
-  const isBarVisible = bar.style.display === "block";
-  console.log("Toggling motivation bar. Currently visible?", isBarVisible);
+  const computedDisplay = window.getComputedStyle(bar).display;
+  const isBarVisible = computedDisplay !== "none";
 
-  // Toggle visibility
-  bar.style.display = isBarVisible ? "none" : "block";
+  console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+  console.log("Toggling to:", isBarVisible ? "none" : "flex");
+
+  if (isBarVisible) {
+    bar.style.display = "none";
+    bar.classList.remove("d-flex");
+  } else {
+    bar.style.display = "flex";
+    bar.classList.add("d-flex");
+  }
 }
+
+
 
 
 // Enable the submit button only if both fields are filled
