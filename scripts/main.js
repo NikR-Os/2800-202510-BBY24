@@ -424,4 +424,34 @@ document.addEventListener("DOMContentLoaded", () => {
     descInput.addEventListener("input", checkFormReady);
 });
 
+document.getElementById("getMotivationBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("topicInput").value.trim();
+  const output = document.getElementById("motivationText");
+
+  if (!topic) {
+    output.textContent = "Please enter a topic first.";
+    return;
+  }
+
+  output.textContent = "Thinking... ✨";
+
+  try {
+    const response = await fetch("/api/ai/motivate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.message) {
+      output.textContent = data.message;
+    } else {
+      output.textContent = "Hmm, I couldn't come up with anything just now.";
+    }
+  } catch (err) {
+    console.error("Error fetching AI response:", err);
+    output.textContent = "Something went wrong. Please try again later.";
+  }
+});
 
