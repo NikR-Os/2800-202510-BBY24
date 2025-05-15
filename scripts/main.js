@@ -87,7 +87,7 @@ showMap();
 
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({center: userLocation, zoom: 15})
+        map.flyTo({ center: userLocation, zoom: 15 })
     })
 }
 
@@ -390,6 +390,15 @@ function toggleForm() {
     button.style.display = isFormVisible ? "inline-block" : "none"; // Hide or show button
 }
 
+function toggleMotivationBar() {
+  const bar = document.getElementById("motivationBar");
+  const isBarVisible = bar.style.display === "block";
+  console.log("Toggling motivation bar. Currently visible?", isBarVisible);
+
+  // Toggle visibility
+  bar.style.display = isBarVisible ? "none" : "block";
+}
+
 
 // Enable the submit button only if both fields are filled
 function checkFormReady() {
@@ -400,7 +409,9 @@ function checkFormReady() {
 }
 //  Add listener to check description input on every keystroke
 document.addEventListener("DOMContentLoaded", () => {
+    // Enable submit button on input
     const descInput = document.getElementById("sessionFormInput");
     descInput.addEventListener("input", checkFormReady);
 });
+
 

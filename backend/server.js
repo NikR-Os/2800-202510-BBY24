@@ -10,16 +10,18 @@ const Admin = require('./models/Admin');             // Import Mongoose for Mong
 console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
-const cors = require("cors");                        // Import CORS to allow cross-origin requests
-
+const cors = require("cors");
+const aiRoute = require("./ai");                        
 const app = express();  // Create Express app instance
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../'));
-
-
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
+app.use("/api/ai", aiRoute);
+
+
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
