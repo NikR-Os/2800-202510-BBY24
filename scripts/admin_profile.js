@@ -1,18 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const userId = sessionStorage.getItem('userId');
     const userRole = sessionStorage.getItem('userRole');
-
-    if (!userId) {
-        alert('Please login first');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    if (userRole !== 'admin') {
-        alert('You do not have admin privileges');
-        window.location.href = 'student_profile.html';
-        return;
-    }
+// Check if user is logged in and has the correct role
+    // if (userRole !== "admin") {
+    // alert("Admin profile access only");
+    // window.location.href = userRole === "student" ? "student_profile.html" : "login.html";}
 
     const profileForm = document.getElementById('profileForm');
     const imageUpload = document.getElementById('imageUpload');

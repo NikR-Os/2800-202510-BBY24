@@ -16,7 +16,6 @@ const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../'));
-
                              
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
@@ -29,9 +28,6 @@ mongoose.connect(mongoURI, {
 })
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB connection error:", err));
-
-
-
 
 // Route: Signup
 app.post('/signup', async (req, res) => {
@@ -76,13 +72,14 @@ app.post('/signup', async (req, res) => {
     const newUser = new role({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: type
     });
 
     await newUser.save();
 
     // Respond with success + user ID
-    res.status(200).json({ message: "Signup successful", userId: newUser._id });
+    res.status(200).json({ message: "Signup successful", userId: newUser._id , role:type, name: newUser.name });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error." });
@@ -106,7 +103,6 @@ app.post('/login', async (req, res) => {
   if (!isMatch) {
     return res.status(401).json({ message: "Invalid credentials." });
   }
-
   res.status(200).json({ userId: user._id, name: user.name, role: user.role});
 });
 
@@ -292,38 +288,34 @@ io.on("connection", (socket) => {
 // Get user profile data (Student or Admin)
 app.get('/profile/:id', async (req, res) => {
   const { id } = req.params;
-  console.log("Received profile request for ID:", id);
 
   try {
-    // Check if the user is a student
+    // Check student first
     const student = await Student.findById(id);
-     console.log("Student found:", student); 
     if (student) {
       return res.json({
         name: student.name,
         email: student.email,
-        role: 'student',
+        role: student.role || 'student', // Ensure role exists
         program: student.program,
         year: student.year,
         courses: student.courses || []
       });
     }
 
-    // If it's not a student, check if it's an admin
+    // Then check admin
     const admin = await Admin.findById(id);
-       console.log("Admin found:", admin);
     if (admin) {
       return res.json({
         name: admin.name,
         email: admin.email,
-        role: 'admin',
+        role: admin.role || 'admin', // Ensure role exists
         department: admin.department,
         position: admin.position,
         courses: admin.courses || []
       });
     }
 
-    // If neither student nor admin was found, return 404
     res.status(404).json({ message: 'User not found' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -373,6 +365,12 @@ app.put('/profile/admin/:id', async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+});
+
+app.get('/logout', (req, res) => {
+  res.clearCookie('token'); // clear JWT or session token, if it's used
+  res.clearCookie('connect.sid'); // clear express-session cookie, just in case
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 server.listen(port, () => {

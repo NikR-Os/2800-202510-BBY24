@@ -17,6 +17,8 @@ document.getElementById("student-signup-submit").addEventListener("click", async
       if (res.ok) {
         alert("Signup successful. Logging you in...");
         sessionStorage.setItem("userId", data.userId);
+        sessionStorage.setItem('userRole', data.role);
+        sessionStorage.setItem('userName', data.name);
         window.location.href = "main.html";
       } else {
         alert("Signup failed: " + data.message);
@@ -50,6 +52,8 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
       alert("Signup successful. Logging you in...");
       // Optionally auto-login after signup
       sessionStorage.setItem("userId", data.userId);
+      sessionStorage.setItem('userRole', data.role);
+      sessionStorage.setItem('userName', data.name);
       window.location.href = "adminMain.html";
     } else {
       alert("Signup failed: " + data.message);
@@ -92,6 +96,7 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
             sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
             sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
             sessionStorage.setItem("userRole", data.role); // store user role 
+            sessionStorage.setItem("userName", data.name);
 
             window.location.href = "main.html"; // Redirect the user to the main application page (frontend path).
           } else { // If the login attempt failed (bad credentials or other issue)...
