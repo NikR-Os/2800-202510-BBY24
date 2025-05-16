@@ -428,6 +428,8 @@ document.getElementById("getMotivationBtn").addEventListener("click", async () =
   const topic = document.getElementById("topicInput").value.trim();
   const output = document.getElementById("motivationText");
 
+  console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+
   if (!topic) {
     output.textContent = "Please enter a topic first.";
     return;
@@ -444,14 +446,17 @@ document.getElementById("getMotivationBtn").addEventListener("click", async () =
 
     const data = await response.json();
 
+    console.log("[getMotivationBtn] Server response:", data); // log full response
+
     if (response.ok && data.message) {
       output.textContent = data.message;
     } else {
       output.textContent = "Hmm, I couldn't come up with anything just now.";
     }
   } catch (err) {
-    console.error("Error fetching AI response:", err);
+    console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
     output.textContent = "Something went wrong. Please try again later.";
   }
 });
+
 

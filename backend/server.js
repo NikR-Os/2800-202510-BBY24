@@ -11,7 +11,8 @@ console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");
-const aiRoute = require("./ai");                        
+const aiRoute = require("./ai");
+console.log("[server.js] AI route mounted at /api/ai");
 const app = express();  // Create Express app instance
 
 app.use(express.json());
