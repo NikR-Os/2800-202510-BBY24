@@ -35,18 +35,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       sessionStorage.setItem("programName", program.name);
       console.log("[Debug] Found program:", program.name);
+
       if (program.courses) {
-        const updateCoursesRes = await fetch(`/profile/student/${userId}`, {
+        const updateRes = await fetch(`/profile/student/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ courses: program.courses })
+          body: JSON.stringify({ program: program.name, courses: program.courses })
         });
-        console.log("[Program] Student courses field updated:", await updateCoursesRes.json());
-      } else {
-        console.warn("[Program] Program has no courses field.");
+
+        const updatedStudent = await updateRes.json();
+        console.log("[Program] Student program and courses updated:", updatedStudent);
+
+        // Update sessionStorage with new values
+        sessionStorage.setItem("programName", updatedStudent.program || "");
+        sessionStorage.setItem("courses", JSON.stringify(updatedStudent.courses || []));
       }
+
+
 
 
       const updateRes = await fetch(`/profile/student/${userId}`, {
