@@ -15,8 +15,8 @@ const cors = require("cors");                        // Import CORS to allow cro
 const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/../'));
-
+app.use(express.static(__dirname + '/../')); // This is not secure...
+app.use('/images', express.static(__dirname + '/../images'));
 
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS

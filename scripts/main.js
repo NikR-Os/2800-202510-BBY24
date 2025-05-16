@@ -99,8 +99,6 @@ function updateLength(length) {
 }
 
 // Fetch all sessions and populate the map
-
-
 async function loadSessions(map) {
     try {
         const response = await fetch('http://localhost:8000/sessions');
@@ -118,69 +116,86 @@ async function loadSessions(map) {
 }
 
 function addSessionPins(map, sessions) {
-
     const features = sessions.map(session => {
-        const { geolocation, length, ownerName, ownerEmail } = session;
+        const { geolocation, length, ownerName, ownerEmail, subject } = session;
         if (!geolocation) return null;
 
         return {
-            'type': 'Feature',
-            'properties': {
-                'description': `Session of ${length} minutes`,
-                'owner': ownerName,
-                'email': ownerEmail
+            type: 'Feature',
+            properties: {
+                description: `Session of ${length} minutes`,
+                owner: ownerName,
+                email: ownerEmail,
+                subject: subject || 'default'
             },
-            'geometry': {
-                'type': 'Point',
-                'coordinates': [geolocation.longitude, geolocation.latitude]
+            geometry: {
+                type: 'Point',
+                coordinates: [geolocation.longitude, geolocation.latitude]
             }
         };
     }).filter(feature => feature !== null);
 
-    map.on('load', () => {
-        // Add features (pins) to the map
-        map.addSource('sessions', {
-            'type': 'geojson',
-            'data': {
-                'type': 'FeatureCollection',
-                'features': features
-            }
-        });
+    map.on('load', async () => {
+        const sessionSubjects = ["math", "writing", "business", "computer", "art", "trades", "default"];
 
-        map.addLayer({
-            'id': 'session-pins',
-            'type': 'circle',
-            'source': 'sessions',
-            'paint': {
-                'circle-color': 'orange',
-                'circle-radius': 10,
-                'circle-stroke-width': 4,
-                'circle-stroke-color': '#ffffff'
-            }
-        });
+        try {
+            await Promise.all(sessionSubjects.map(subject => loadImageToMap(map, subject)));
+            addSessionPinsLayer(map, features);
+        } catch (error) {
+            console.error("Error loading images:", error);
+        }
+    });
+}
 
-        // Create popups for session markers
-        map.on('click', 'session-pins', (e) => {
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const { description, owner, email } = e.features[0].properties;
-
-            new mapboxgl.Popup()
-                .setLngLat(coordinates)
-                .setHTML(`${description} created by ${owner} (${email})`)
-                .addTo(map);
-        });
-
-        // Change the cursor to a pointer when hovering over the pins
-        map.on('mouseenter', 'session-pins', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-
-        // Reset cursor when not hovering
-        map.on('mouseleave', 'session-pins', () => {
-            map.getCanvas().style.cursor = '';
+function loadImageToMap(map, subject) {
+    return new Promise((resolve, reject) => {
+        map.loadImage(`http://localhost:8000/images/${subject}_pin.png`, (error, image) => {
+            if (error) return reject(error);
+            map.addImage(`${subject}_pin`, image);
+            resolve();
         });
     });
 }
+
+function addSessionPinsLayer(map, features) {
+    map.addSource('sessions', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: features
+        }
+    });
+
+    map.addLayer({
+        id: 'session-pins',
+        type: 'symbol',
+        source: 'sessions',
+        layout: {
+            'icon-image': ['concat', ['get', 'subject'], '_pin'],
+            'icon-size': 0.025,
+            'icon-rotate': 180
+        }
+    });
+
+    map.on('click', 'session-pins', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { description, owner, email } = e.features[0].properties;
+
+        new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(`${description} created by ${owner} (${email})`)
+            .addTo(map);
+    });
+
+    map.on('mouseenter', 'session-pins', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'session-pins', () => {
+        map.getCanvas().style.cursor = '';
+    });
+}
+
 
 // Update the initializeMap function to call loadSession
 function initializeMap(coords) {
@@ -203,6 +218,11 @@ function initializeMap(coords) {
     getClickedLocation(map, (clickedLocation) => {
         getRoute(map, userLocation, clickedLocation);
     });
+}
+
+// Load all of the session pin images in this function.
+function loadSessionPinImages(map, session) {
+
 }
 
 // ---------------------------------------------------------------------

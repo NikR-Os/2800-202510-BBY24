@@ -12,7 +12,8 @@ const sessionSchema = new mongoose.Schema({
     members: [{ type: String, required: true }], // Array of userIds
     course: { type: String, default: null },
     courses: { type: [String], default: [] },
-    program: { type: String, required: true }
+    program: { type: String, required: true },
+    subject: {type: String, default: null}
 });
 
 module.exports = mongoose.model("Session", sessionSchema);
