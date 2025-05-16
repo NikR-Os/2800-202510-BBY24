@@ -1,45 +1,49 @@
-async function writeSessions() {
-    const baseUrl = window.location.origin;
-    const selectedLength = document.getElementById("lengthInput").textContent;
-    const userId = sessionStorage.getItem("userId");
 
-    if (!userId) {
-        alert("You must be logged in to create a session.");
+console.log("[Debug] session.js script loaded"); // Top of session.js
+
+async function writeSessions() {
+    console.log("[Debug] writeSessions() has been called");
+
+    const userId = sessionStorage.getItem("userId");
+    const userName = sessionStorage.getItem("name");
+    const userEmail = sessionStorage.getItem("email");
+    const program = sessionStorage.getItem("programName");
+    const courses = JSON.parse(sessionStorage.getItem("courses"));
+    console.log("[Debug] Courses from sessionStorage:", courses);
+
+    const selectedLength = document.getElementById("sessionLengthValue").value;
+    const courseSelect = document.getElementById("courseSelect");
+
+    // Ensure a course is selected before continuing
+    const selectedCourse = courseSelect?.value;
+
+    if (!selectedCourse) {
+        alert("Please select a course.");
         return;
     }
 
-    try {
-        // 1. Fetch user info from MongoDB
-        const userRes = await fetch(`${baseUrl}/profile/${userId}`);
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
 
-        const user = await userRes.json();
+    navigator.geolocation.getCurrentPosition(async (position) => {
+       const geolocation = {
+  latitude: position.coords.latitude,
+  longitude: position.coords.longitude,
+};
 
-        const userName = user.name;
-        const userEmail = user.email;
 
-        // 2. Get current geolocation
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const geolocation = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-            };
-
-            // 3. Create the session in MongoDB
-            // Get program from sessionStorage
-            const program = sessionStorage.getItem("programName");
-            console.log("[writeSessions] Using program name from sessionStorage:", program);
-
-            const courses = JSON.parse(sessionStorage.getItem("courses"));
-            if (courses) {
-                console.log("[writeSessions] Including courses in session:", courses);
-            } else {
-                console.warn("[writeSessions] No courses found in sessionStorage");
-            }
-
-            if (!program) {
-                alert("Program name not set. Did you enter the group code?");
-                return;
-            }
+        try {
+            const baseUrl = window.location.origin;
+console.log("[Debug] ownerName:", userName);
+console.log("[Debug] ownerEmail:", userEmail);
+console.log("[Debug] geolocation:", geolocation);
+console.log("[Debug] session length:", selectedLength);
+console.log("[Debug] selected course:", selectedCourse);
+console.log("[Debug] program:", program);
+console.log("[Debug] courses array:", courses);
+console.log("[Debug] userId (for members):", userId);
 
             const sessionRes = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
@@ -53,39 +57,35 @@ async function writeSessions() {
                     length: selectedLength,
                     timestamp: new Date().toISOString(),
                     members: [userId],
-                    course: null,
-                    courses, 
-                    program 
+                    program,
+                    courses,
+                    course: selectedCourse
                 })
             });
 
+            const data = await sessionRes.json();
+            console.log("[writeSessions] Session created:", data);
 
-            const sessionData = await sessionRes.json();
-            const session = sessionData._id;
-
-            // 4. Update the user’s document with the session ID
+            // update student document with new session id
             await fetch(`${baseUrl}/profile/student/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ session })
+                body: JSON.stringify({ session: data._id })
             });
 
-            console.log("Session created and user updated successfully.");
             window.location.reload();
-
-        }, (error) => {
-            console.error("Geolocation error:", error.message);
-            alert("Could not retrieve geolocation. Please try again.");
-        });
-
-    } catch (error) {
-        console.error("Error creating session:", error);
-        alert("Failed to create session. Please try again later.");
-    }
+        } catch (err) {
+            console.error("[writeSessions] Failed to create session:", err);
+        }
+    }, (error) => {
+        console.error("Geolocation error:", error);
+        alert("Could not get your location.");
+    });
 }
 
+console.log("[Debug] writeSessions function defined"); // After function writeSessions() {
 
 // ================================
 // Delete Current Session Button Setup

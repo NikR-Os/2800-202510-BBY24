@@ -87,7 +87,7 @@ showMap();
 
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({center: userLocation, zoom: 15})
+        map.flyTo({ center: userLocation, zoom: 15 })
     })
 }
 
@@ -388,19 +388,74 @@ function toggleForm() {
     // Toggle visibility
     form.style.display = isFormVisible ? "none" : "block";
     button.style.display = isFormVisible ? "inline-block" : "none"; // Hide or show button
+
+    //  Populate course dropdown when form is shown
+    if (!isFormVisible) {
+        const courseSelect = document.getElementById("courseSelect");
+        const courses = JSON.parse(sessionStorage.getItem("courses"));
+
+        if (courses && courseSelect && courseSelect.options.length <= 1) {
+            console.log("[main.js] Populating course dropdown:", courses);
+            courseSelect.innerHTML = `<option value="">Select one...</option>`;
+            courses.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c;
+                option.textContent = c;
+                courseSelect.appendChild(option);
+            });
+        } else {
+            console.warn("[main.js] Dropdown already populated or no courses in sessionStorage");
+        }
+    }
 }
 
 
-// Enable the submit button only if both fields are filled
+
+// =========================
+// Enable button if all form fields are valid
+// =========================
 function checkFormReady() {
-    const desc = document.getElementById("sessionFormInput").value.trim();
-    const length = document.getElementById("sessionLengthValue").value.trim();
+    const desc = document.getElementById("sessionFormInput")?.value.trim();
+    const length = document.getElementById("sessionLengthValue")?.value.trim();
+    const course = document.getElementById("courseSelect")?.value;
     const submitBtn = document.getElementById("submitSessionBtn");
-    submitBtn.disabled = !(desc && length);
+
+    console.log("[Debug] Form state - desc:", desc, "length:", length, "course:", course);
+    if (submitBtn) {
+        submitBtn.disabled = !(desc && length && course);
+    }
 }
-//  Add listener to check description input on every keystroke
+
+// =========================
+// Add listeners to ALL inputs
+// =========================
 document.addEventListener("DOMContentLoaded", () => {
     const descInput = document.getElementById("sessionFormInput");
-    descInput.addEventListener("input", checkFormReady);
-});
+    const courseSelect = document.getElementById("courseSelect");
+    const dropdown = document.getElementById("lengthInput");
 
+    if (descInput) descInput.addEventListener("input", checkFormReady);
+    if (courseSelect) courseSelect.addEventListener("change", checkFormReady);
+
+    // Listen for manual changes to session length value
+    const sessionLengthValue = document.getElementById("sessionLengthValue");
+    if (dropdown && sessionLengthValue) {
+        dropdown.addEventListener("click", () => {
+            setTimeout(checkFormReady, 50); // wait briefly for async DOM updates
+            const form = document.getElementById("sessionForm");
+            if (form) {
+                console.log("[Debug] Binding submit handler to sessionForm");
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    console.log("[Debug] Form submit triggered.");
+                    writeSessions();
+                    toggleForm();
+                });
+            } else {
+                console.warn("[Debug] sessionForm not found in DOM!");
+            }
+
+        });
+    }
+
+});

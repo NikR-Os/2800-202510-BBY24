@@ -82,7 +82,7 @@
       <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
 
       <div id="sessionFormPopup" style="display: none;">
-        <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
+        <form id="sessionForm" class="border rounded p-3 bg-light">
           <h5>Create a Study Session</h5>
 
           <label for="formGroupExampleInput" class="form-label">Session Description</label>
@@ -105,8 +105,18 @@
             </ul>
           </div>
 
+          <div class="mb-3">
+            <label for="courseSelect" class="form-label">Choose a course</label>
+            <select class="form-select" id="courseSelect" required>
+              <option value="">Select one...</option>
+            </select>
+          </div>
+
           <!--  Disabled by default -->
-          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled>Submit Form</button>
+          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled
+            onclick="console.log('[Debug] Submit button clicked')">
+            Submit Form
+          </button>
           <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
         </form>
       </div>
@@ -218,7 +228,7 @@
       <script src="/socket.io/socket.io.js"></script>
       <script src="./scripts/chatbox.js"></script>
       <script src="./scripts/location.js"></script>
-            <script src="./scripts/program.js"></script>
+      <script src="./scripts/program.js"></script>
 
 
 
