@@ -1,30 +1,50 @@
-async function writeSessions() {
-    const baseUrl = window.location.origin;
-    const selectedLength = document.getElementById("lengthInput").textContent;
-    const userId = sessionStorage.getItem("userId");
 
-    if (!userId) {
-        alert("You must be logged in to create a session.");
+console.log("[Debug] session.js script loaded"); // Top of session.js
+
+async function writeSessions() {
+    console.log("[Debug] writeSessions() has been called");
+
+    const userId = sessionStorage.getItem("userId");
+    const userName = sessionStorage.getItem("name");
+    const userEmail = sessionStorage.getItem("email");
+    const program = sessionStorage.getItem("programName");
+    const courses = JSON.parse(sessionStorage.getItem("courses"));
+    console.log("[Debug] Courses from sessionStorage:", courses);
+
+    const selectedLength = document.getElementById("sessionLengthValue").value;
+    const courseSelect = document.getElementById("courseSelect");
+
+    // Ensure a course is selected before continuing
+    const selectedCourse = courseSelect?.value;
+
+    if (!selectedCourse) {
+        alert("Please select a course.");
         return;
     }
 
-    try {
-        // 1. Fetch user info from MongoDB
-        const userRes = await fetch(`${baseUrl}/users/${userId}`);
-       
-        const user = await userRes.json();
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
 
-        const userName = user.name;
-        const userEmail = user.email;
+    navigator.geolocation.getCurrentPosition(async (position) => {
+       const geolocation = {
+  latitude: position.coords.latitude,
+  longitude: position.coords.longitude,
+};
 
-        // 2. Get current geolocation
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const geolocation = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-            };
 
-            // 3. Create the session in MongoDB
+        try {
+            const baseUrl = window.location.origin;
+console.log("[Debug] ownerName:", userName);
+console.log("[Debug] ownerEmail:", userEmail);
+console.log("[Debug] geolocation:", geolocation);
+console.log("[Debug] session length:", selectedLength);
+console.log("[Debug] selected course:", selectedCourse);
+console.log("[Debug] program:", program);
+console.log("[Debug] courses array:", courses);
+console.log("[Debug] userId (for members):", userId);
+
             const sessionRes = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
                 headers: {
@@ -37,36 +57,35 @@ async function writeSessions() {
                     length: selectedLength,
                     timestamp: new Date().toISOString(),
                     members: [userId],
-                    course: null //  TEMP placeholder until form field is added
+                    program,
+                    courses,
+                    course: selectedCourse
                 })
             });
 
-            const sessionData = await sessionRes.json();
-            const session = sessionData._id;
+            const data = await sessionRes.json();
+            console.log("[writeSessions] Session created:", data);
 
-            // 4. Update the user’s document with the session ID
-            await fetch(`${baseUrl}/users/${userId}/session`, {
-                method: "PATCH",
+            // update student document with new session id
+            await fetch(`${baseUrl}/profile/student/${userId}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ session })
+                body: JSON.stringify({ session: data._id })
             });
 
-            console.log("Session created and user updated successfully.");
             window.location.reload();
-
-        }, (error) => {
-            console.error("Geolocation error:", error.message);
-            alert("Could not retrieve geolocation. Please try again.");
-        });
-
-    } catch (error) {
-        console.error("Error creating session:", error);
-        alert("Failed to create session. Please try again later.");
-    }
+        } catch (err) {
+            console.error("[writeSessions] Failed to create session:", err);
+        }
+    }, (error) => {
+        console.error("Geolocation error:", error);
+        alert("Could not get your location.");
+    });
 }
 
+console.log("[Debug] writeSessions function defined"); // After function writeSessions() {
 
 // ================================
 // Delete Current Session Button Setup
@@ -83,35 +102,42 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================================
 document.addEventListener("DOMContentLoaded", async () => {
 
-    // Get references to the DOM elements that will show the session status
     const baseUrl = window.location.origin;
-    const indicator = document.getElementById("session-indicator");         // The coloured dot
-    const label = document.getElementById("session-indicator-label");       // The text beside the dot
-    const deleteBtn = document.getElementById("delete-session-btn");        // The delete session button
-    const statusMessageElem = document.getElementById("session-status-message"); // Message below the indicator
-    const userId = sessionStorage.getItem("userId"); // Retrieve the user's ID from sessionStorage
+    const indicator = document.getElementById("session-indicator");
+    const label = document.getElementById("session-indicator-label");
+    const deleteBtn = document.getElementById("delete-session-btn");
+    const statusMessageElem = document.getElementById("session-status-message");
+    const userId = sessionStorage.getItem("userId");
+
+    if (!indicator || !label || !deleteBtn || !statusMessageElem) {
+        console.warn("[SessionIndicator] Missing one or more UI elements");
+        return;
+    }
+
     if (!userId) {
-        console.warn("No userId found in sessionStorage.");
+        console.warn("[SessionIndicator] No userId found in sessionStorage");
         return;
     }
 
     try {
-        // Fetch the user's document from your MongoDB backend
-        const res = await fetch(`${baseUrl}/users/${userId}`);
+        console.log(`[SessionIndicator] Fetching profile for userId: ${userId}`);
+        const res = await fetch(`${baseUrl}/profile/${userId}`);
         const userData = await res.json();
+        console.log("[SessionIndicator] User profile fetched:", userData);
 
-        const userName = userData.name || "there";       // Fallback name
-        const session = userData.session;              // The session ID stored in user doc
+        const userName = userData.name || "there";
+        const session = userData.session;
+        console.log(`[SessionIndicator] Extracted session ID: ${session}`);
 
         if (session) {
-            // Fetch the session document if user has one
+            console.log(`[SessionIndicator] Fetching session data for ID: ${session}`);
             const sessionRes = await fetch(`${baseUrl}/sessions/${session}`);
             const sessionData = await sessionRes.json();
+            console.log("[SessionIndicator] Session data:", sessionData);
 
-            const startTime = new Date(sessionData.timestamp); // Convert timestamp to Date
+            const startTime = new Date(sessionData.timestamp);
             const length = sessionData.length;
 
-            // Calculate session end time
             let endTime = new Date(startTime);
             if (length === "30 minutes") endTime.setMinutes(endTime.getMinutes() + 30);
             else if (length === "1 hour") endTime.setHours(endTime.getHours() + 1);
@@ -119,24 +145,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const endTimeString = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            console.log(`[SessionIndicator] Active session ends at ${endTimeString}`);
+
             scheduleSessionExpiration(endTime);
 
-            //  Update the UI for an active session
             indicator.style.backgroundColor = "green";
             label.textContent = "Active Session";
             deleteBtn.style.display = "inline-block";
             statusMessageElem.textContent = `Hey ${userName}, your ${length} session ends at ${endTimeString}.`;
         } else {
-            //  User has no session — show inactive UI
+            console.log(`[SessionIndicator] No session ID found for user ${userName}`);
             indicator.style.backgroundColor = "red";
             label.textContent = "No Active Session";
             deleteBtn.style.display = "none";
             statusMessageElem.textContent = `Hey ${userName}, you have no active sessions.`;
         }
     } catch (err) {
-        console.error("Failed to load session data:", err);
+        console.error("[SessionIndicator] Error loading session data:", err);
     }
 });
+
 
 // ================================
 // Delete Current Session
@@ -151,7 +179,7 @@ async function deleteCurrentUserSession() {
 
     try {
         // Fetch the user's document to get the current session ID
-        const res = await fetch(`${baseUrl}/users/${userId}`);
+        const res = await fetch(`${baseUrl}/profile/${userId}`);
         const user = await res.json();
         const session = user.session;
 
@@ -166,8 +194,8 @@ async function deleteCurrentUserSession() {
         });
 
         // Clear the session field from the user document
-        await fetch(`${baseUrl}/users/${userId}/session`, {
-            method: "PATCH",
+        await fetch(`${baseUrl}/profile/student/${userId}`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session: null })
         });

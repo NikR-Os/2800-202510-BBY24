@@ -1,0 +1,90 @@
+<!-- Dark Overlay  -->
+<div class="overlay"></div>
+
+<!-- Navbar with Hamburger (Responsive) -->
+<nav class="navbar navbar-light bg-light sticky-top">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" id="sidebarToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="d-flex align-items-center ms-2">
+      <img
+        src="./favicon/android-chrome-192x192.png"
+        alt="StudyNav Logo"
+        class="logo-img"
+        style="height: 30px"
+      />
+      <span class="navbar-brand mb-0">StudyNav</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="d-flex align-items-center">
+      <img
+        src="./favicon/android-chrome-192x192.png"
+        alt="StudyNav Logo"
+        class="logo-img"
+      />
+      <span class="fs-5 fw-bold text-success">StudyNav</span>
+    </div>
+  </div>
+
+  <!-- Static Content -->
+  <div class="flex-grow-1 overflow-auto py-3" id="navContent">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a href="main.html" class="nav-link" data-link="home">
+          <i class="fas fa-home"></i>
+          Home
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/chat" class="nav-link" data-link="chat">
+          <i class="fas fa-comment-dots"></i>
+          Chat
+          <span class="badge bg-danger float-end mt-1" id="unreadMessagesBadge"
+            >0</span
+          >
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/profile" class="nav-link" data-link="profile">
+          <i class="fas fa-user"></i>
+          Profile
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="setting.html" class="nav-link" data-link="settings">
+          <i class="fas fa-cog"></i>
+          Settings
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer p-3 border-top">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <img
+          src="/images/elmo.jpg"
+          alt="User"
+          class="rounded-circle"
+          width="40"
+          height="40"
+        /> <!--need to work on this-->
+        <div class="ms-3">
+          <div class="fw-bold" id="usernameDisplay">Guest</div>
+          <!-- Display username -->
+          <small class="text-muted" id="userRoleDisplay">Visitor</small>
+        </div>
+      </div>
+      <a href="/logout" class="btn btn-sm btn-outline-danger" id="logoutButton">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+</div>

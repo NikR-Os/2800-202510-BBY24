@@ -34,6 +34,9 @@
   <!-- <link rel="stylesheet" href="./styles/style.css"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="./styles/style.css">
+  <link rel="stylesheet" href="./styles/style_navbar.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
 
 </head>
 
@@ -51,7 +54,7 @@
   <!-- Stuff for body goes here -->
 
   <!-- our own navbar goes here -->
-  <nav id="navbarPlaceholder"></nav>
+  <div id="navbarPlaceholder"></div>
 
   <!-- Nikolas - Welcome Hero Screen-->
   <div class="jumbotron mt-3">
@@ -82,7 +85,7 @@
       <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
 
       <div id="sessionFormPopup" style="display: none;">
-        <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
+        <form id="sessionForm" class="border rounded p-3 bg-light">
           <h5>Create a Study Session</h5>
 
           <label for="formGroupExampleInput" class="form-label">Session Description</label>
@@ -105,8 +108,18 @@
             </ul>
           </div>
 
+          <div class="mb-3">
+            <label for="courseSelect" class="form-label">Choose a course</label>
+            <select class="form-select" id="courseSelect" required>
+              <option value="">Select one...</option>
+            </select>
+          </div>
+
           <!--  Disabled by default -->
-          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled>Submit Form</button>
+          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled
+            onclick="console.log('[Debug] Submit button clicked')">
+            Submit Form
+          </button>
           <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
         </form>
       </div>
@@ -141,10 +154,12 @@
         </form>
       </div>
     </div>
+  </div>
 
-
-    <!-- MAPBOX -->
-    <div id='map' style='width: 90%; height: 600px; position: relative;'>
+    <div id="map-container" style='width: 90%; height: 600px; margin-left: auto; margin-right: auto; position: relative;'>
+      <!-- MAPBOX -->
+      <div id='map' style='width: 100%; height: 600px; position: relative;'>
+      </div>
       <!-- Location overlay inside the map -->
       <div id="location" style="
     position: absolute;
@@ -158,11 +173,18 @@
     pointer-events: none;">
         Detecting your location...
       </div>
-
     </div>
+    
     <!-- Recenter -->
     <div>
+      <br>
       <button id="recenter-button">Recenter The Map</button>
+      <button id="enter-program-btn">Add Program</button>
+      <div id="program-code-form" style="display: none;" class="mt-2">
+        <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code" />
+        <button id="submitProgramCodeBtn" class="btn btn-primary mt-2">Submit</button>
+      </div>
+
     </div>
 
     <div id="pop-menu">
@@ -183,20 +205,16 @@
       </div>
 
 
-      <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-        <p class="col-md-4 mb-0 text-muted">&copy; CAMPUSNAV</p>
-
-        <a href="/"
-          class="col-md-4 d-flex align-items-center justify-content-end mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-          <i class="fa-brands fa-facebook me-3"></i>
-          <i class="fa-brands fa-instagram me-3"></i>
-          <i class="fa-brands fa-linkedin"></i>
-          <svg class="bi me-2" width="40" height="32">
-            <use xlink:href="#bootstrap" />
-          </svg>
-        </a>
-      </footer>
-
+      <footer class="mt-auto py-3 border-top">
+      <div class="container d-flex flex-wrap justify-content-between align-items-center">
+          <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
+          <div class="social-links">
+              <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+      </div>
+  </footer>
 
       <!---------------------------------------------->
       <!-- Your own JavaScript functions go here    -->
@@ -211,11 +229,8 @@
       <script src="/socket.io/socket.io.js"></script>
       <script src="./scripts/chatbox.js"></script>
       <script src="./scripts/location.js"></script>
-
-
-
-
-
+      <script src="./scripts/program.js"></script>
+      <script src="./scripts/navbar.js"></script>
 
 </body>
 
