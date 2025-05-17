@@ -14,13 +14,15 @@ document.getElementById("student-signup-submit").addEventListener("click", async
     });
     const data = await res.json();
 
-    if (res.ok) {
-      alert("Signup successful. Logging you in...");
-      sessionStorage.setItem("userId", data.userId);
-      window.location.href = "main.html";
-    } else {
-      alert("Signup failed: " + data.message);
-    }
+      if (res.ok) {
+        alert("Signup successful. Logging you in...");
+        sessionStorage.setItem("userId", data.userId);
+        sessionStorage.setItem('userRole', data.role);
+        sessionStorage.setItem('userName', data.name);
+        window.location.href = "main.html";
+      } else {
+        alert("Signup failed: " + data.message);
+      }
   } catch (err) {
     console.error("Signup error:", err);
     alert("Something went wrong during signup.");
@@ -50,6 +52,8 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
       alert("Signup successful. Logging you in...");
       // Optionally auto-login after signup
       sessionStorage.setItem("userId", data.userId);
+      sessionStorage.setItem('userRole', data.role);
+      sessionStorage.setItem('userName', data.name);
       window.location.href = "adminMain.html";
     } else {
       alert("Signup failed: " + data.message);
@@ -92,11 +96,15 @@ document.addEventListener("DOMContentLoaded", () => { //Waits until the entire H
           sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
           sessionStorage.setItem("email", data.email);// Store the user's email in session storage for future reference.
          console.log("[Login] Stored email in sessionStorage:", data.email);
+          //sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
+
 
           sessionStorage.setItem("userRole", data.role); // store user role 
           sessionStorage.setItem("programName", data.program); 
           console.log("[Login] Program name set in sessionStorage:", data.program);
           sessionStorage.setItem("name", data.name);
+          //sessionStorage.setItem("userName", data.name);
+
 
           sessionStorage.setItem("courses", JSON.stringify(data.courses));
           console.log("[Login] Stored courses:", data.courses);

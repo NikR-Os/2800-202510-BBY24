@@ -43,6 +43,10 @@ const adminSchema = new mongoose.Schema({
     type: String,
     default: 'unassigned',
     required: true
+  },
+  image: {
+    data: Buffer,
+    contentType: String
   }
 });  
 

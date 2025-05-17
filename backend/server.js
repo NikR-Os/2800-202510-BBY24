@@ -11,7 +11,8 @@ console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
-
+const multer = require("multer");                  // Import multer for file uploads
+const path = require("path");                      // Import path for file paths
 const app = express();  // Create Express app instance
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -30,7 +31,12 @@ mongoose.connect(mongoURI, {
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-
+// Set up multer for file uploads
+const storage = multer.memoryStorage(); // Store files in memory as Buffer
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 
 // Route: Signup
@@ -72,13 +78,14 @@ app.post('/signup', async (req, res) => {
     const newUser = new role({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: type
     });
 
     await newUser.save();
 
     // Respond with success + user ID
-    res.status(200).json({ message: "Signup successful", userId: newUser._id });
+    res.status(200).json({ message: "Signup successful", userId: newUser._id , role:type, name: newUser.name });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error." });
@@ -87,11 +94,54 @@ app.post('/signup', async (req, res) => {
 
 
 // Route: Login
+// Route: Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
+
+  try {
+    // First, check if email exists in Student collection
+    let user = await Student.findOne({ email });
+    let role = "student";
+
+    // If not in Student, check Admin collection
+    if (!user) {
+      user = await Admin.findOne({ email });
+      role = "admin";
+    }
+
+    // Still no match? User not found
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Validate password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      role: role,
+      program: user.program || null,
+      courses: user.courses || null
+    });
+
+
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+//  Route: Get user document by ID
+app.get('/users/:userId', async (req, res) => {
+  const { userId } = req.params;
 
   try {
     // First, check if email exists in Student collection
@@ -324,17 +374,16 @@ io.on("connection", (socket) => {
 // Get user profile data (Student or Admin)
 app.get('/profile/:id', async (req, res) => {
   const { id } = req.params;
-  console.log("Received profile request for ID:", id);
 
   try {
-    // Check if the user is a student
+    // Check student first
     const student = await Student.findById(id);
     console.log("Student found:", student);
     if (student) {
       return res.json({
         name: student.name,
         email: student.email,
-        role: 'student',
+        role: student.role || 'student', // Ensure role exists
         program: student.program,
         year: student.year,
         courses: student.courses || [],
@@ -343,21 +392,20 @@ app.get('/profile/:id', async (req, res) => {
       });
     }
 
-    // If it's not a student, check if it's an admin
+    // Then check admin
     const admin = await Admin.findById(id);
     console.log("Admin found:", admin);
     if (admin) {
       return res.json({
         name: admin.name,
         email: admin.email,
-        role: 'admin',
+        role: admin.role || 'admin', // Ensure role exists
         department: admin.department,
         position: admin.position,
         courses: admin.courses || []
       });
     }
 
-    // If neither student nor admin was found, return 404
     res.status(404).json({ message: 'User not found' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -422,6 +470,106 @@ app.get('/programs/:code', async (req, res) => {
   }
 });
 
+// Upload profile image
+app.post('/profile/:id/image', upload.single('image'), async (req, res) => {
+  const { id } = req.params;
+  
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  try {
+    const imageData = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype
+    };
+
+    // Update student or admin with the image
+    const studentUpdate = await Student.findByIdAndUpdate(id, { image: imageData }, { new: true });
+    if (studentUpdate) {
+      return res.status(200).json({ message: 'Image uploaded successfully' });
+    }
+
+    const adminUpdate = await Admin.findByIdAndUpdate(id, { image: imageData }, { new: true });
+    if (adminUpdate) {
+      return res.status(200).json({ message: 'Image uploaded successfully' });
+    }
+
+    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get profile image
+app.get('/profile/:id/image', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check student first
+    const student = await Student.findById(id);
+    if (student && student.image) {
+      res.set('Content-Type', student.image.contentType);
+      return res.send(student.image.data);
+    }
+
+    // Then check admin
+    const admin = await Admin.findById(id);
+    if (admin && admin.image) {
+      res.set('Content-Type', admin.image.contentType);
+      return res.send(admin.image.data);
+    }
+
+    // Return default image if no image found
+    const defaultImagePath = path.join(__dirname,  'images', 'default.avif');
+    return res.sendFile(defaultImagePath);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Profile Deletion Route
+app.delete('/profile/:id', async (req, res) => {
+  const { id } = req.params;
+
+  // Validate ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Invalid user ID format' 
+    });
+  }
+
+  try {
+    // Try deleting as student first
+    const deletedStudent = await Student.findByIdAndDelete(id);
+    
+    // If not found as student, try as admin
+    if (!deletedStudent) {
+      const deletedAdmin = await Admin.findByIdAndDelete(id);
+      if (!deletedAdmin) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'User not found in either Student or Admin collections' 
+        });
+      }
+    }
+
+    // Success response
+    return res.status(200).json({ 
+      success: true,
+      message: 'Profile deleted successfully' 
+    });
+
+  } catch (error) {
+    console.error("Profile deletion error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during profile deletion',
+      error: error.message 
+    });
+  }
+});
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

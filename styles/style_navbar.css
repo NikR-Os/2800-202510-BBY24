@@ -1,0 +1,163 @@
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #198754;
+    --sidebar-bg: #f8f9fa;
+}
+
+#sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--sidebar-bg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);   /* Always start hidden */
+    transition: transform 0.3s ease;
+    z-index: 1050;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar.active {
+    transform: translateX(0);   /* Slide into view when active */
+}
+
+.sidebar-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.logo-img {
+    height: 38px;
+    width: auto;
+    margin-right: 12px;
+    z-index: 1070; 
+    display: inline-block
+}
+
+.navbar {
+    background-color: #7cebb7;
+}
+
+.navbar-light.bg-light {
+    background-color: #2e8b57 !important; 
+    padding: 0.5rem 1rem;
+}
+
+.nav-link {
+    border-radius: 6px;
+    margin: 0.25rem 1rem;
+    padding: 0.75rem 1rem;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    background-color: rgba(0,0,0,0.05);
+    transform: translateX(3px);
+}
+
+.nav-link.active {
+    background-color: var(--primary-color);
+    color: white !important;
+    font-weight: 500;
+}
+
+.nav-link i {
+    width: 24px;
+    text-align: center;
+    margin-right: 12px;
+}
+
+#content {
+    min-height: 100vh;
+    transition: all 0.3s ease-out;
+}
+
+#content.shifted {
+    margin-left: var(--sidebar-width);
+}
+
+.navbar-toggler {
+    border: none;
+    font-size: 1.25rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 1040;
+    display: none;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* Mobile styles */
+@media (max-width: 991.98px) {
+    .navbar-toggler {
+        display: block !important;
+    }
+
+    /* The sidebar already uses transform for both mobile and desktop */
+    #sidebar {
+        transform: translateX(-100%);  /* Initially hidden on mobile */
+    }
+
+    #sidebar.active {
+        transform: translateX(0);  /* Visible when active */
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 992px) {
+    #sidebar {
+        top: 56px;
+        height: calc(100vh - 56px);
+        transform: translateX(-100%); /* Start hidden on desktop too */
+    }
+
+    #sidebar.active {
+        transform: translateX(0); /* Show when active */
+    }
+
+    /* Navbar style for desktop */
+    .navbar {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1060;
+        background-color: #2e8b57;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Show the toggle button on desktop */
+    .navbar-toggler {
+        display: block !important;
+    }
+
+    /* Adjust content area */
+    #content {
+        margin-left: 0; /* Start with no margin */
+        margin-top: 56px;
+        min-height: calc(100vh - 56px);
+        transition: margin-left 0.3s ease;
+    }
+
+    #content.shifted {
+        margin-left: var(--sidebar-width); /* Add margin when sidebar is open */
+    }
+}
