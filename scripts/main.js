@@ -429,6 +429,25 @@ function toggleForm() {
     }
 }
 
+function toggleMotivationBar() {
+  const bar = document.getElementById("motivationBar");
+  const computedDisplay = window.getComputedStyle(bar).display;
+  const isBarVisible = computedDisplay !== "none";
+
+  console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+  console.log("Toggling to:", isBarVisible ? "none" : "flex");
+
+  if (isBarVisible) {
+    bar.style.display = "none";
+    bar.classList.remove("d-flex");
+  } else {
+    bar.style.display = "flex";
+    bar.classList.add("d-flex");
+  }
+}
+
+
+
 
 
 // =========================
@@ -450,6 +469,7 @@ function checkFormReady() {
 // Add listeners to ALL inputs
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
+    // Enable submit button on input
     const descInput = document.getElementById("sessionFormInput");
     const courseSelect = document.getElementById("courseSelect");
     const dropdown = document.getElementById("lengthInput");
@@ -479,3 +499,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+document.getElementById("getMotivationBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("topicInput").value.trim();
+  const output = document.getElementById("motivationText");
+
+  console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+
+  if (!topic) {
+    output.textContent = "Please enter a topic first.";
+    return;
+  }
+
+  output.textContent = "Thinking... ✨";
+
+  try {
+    const response = await fetch("/api/ai/motivate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    const data = await response.json();
+
+    console.log("[getMotivationBtn] Server response:", data); // log full response
+
+    if (response.ok && data.message) {
+      output.textContent = data.message;
+    } else {
+      output.textContent = "Hmm, I couldn't come up with anything just now.";
+    }
+  } catch (err) {
+    console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
+    output.textContent = "Something went wrong. Please try again later.";
+  }
+});
+
+
