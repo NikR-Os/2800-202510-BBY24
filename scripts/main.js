@@ -8,7 +8,7 @@ function showMap() {
     //Default location (YVR city hall) 49.26504440741209, -123.11540318587558
     let defaultCoords = { lat: 49.2490, lng: -123.0019 };
 
-    
+
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -52,10 +52,11 @@ function showMap() {
         mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11', // Styling URL,
+            style: 'mapbox://styles/-clankaplum-/cmah0v57300sl01rffo7kdydx', // Styling URL,
             center: userLocation, // center the map at the user's location
             //center: [-123.0019, 49.2490], // Starting position
-            zoom: 15
+            zoom: 15,
+            projection: 'mercator' // Force Mercator projection
         });
 
         //---------------------------------------------------------------------------------
@@ -68,16 +69,27 @@ function showMap() {
         // After the click, get the route from the user's location to the clicked location
         //---------------------------------------------------------------------------------
         getClickedLocation(map, (clickedLocation) => {
-             getRoute(map, userLocation, clickedLocation);
+            getRoute(map, userLocation, clickedLocation);
         });
+
+        //---------------------------------------------------------------------------------
+        // recenters the map onto the user.
+        //---------------------------------------------------------------------------------
+        recenterMap(map, userLocation);
 
         //---------------------------------
         // Add interactive pins for the sessions
         //---------------------------------
-        addSessionPinsCircle(map);
+        loadSessions(map);
     }
 }
 showMap();
+
+function recenterMap(map, userLocation) {
+    document.getElementById("recenter-button").addEventListener("click", () => {
+        map.flyTo({ center: userLocation, zoom: 15 })
+    })
+}
 
 // update the Length button's text when a dropdown item is selected.
 function updateLength(length) {
@@ -86,101 +98,131 @@ function updateLength(length) {
     checkFormReady(); // call validation check
 }
 
-function addSessionPinsCircle(map) {
-    db.collection('sessions').get().then(allEvents => {
+// Fetch all sessions and populate the map
+async function loadSessions(map) {
+    try {
+        const response = await fetch('http://localhost:8000/sessions');
+        if (!response.ok) {
+            console.error("Failed to load session data:", response.statusText);
+            return;
+        }
 
-        const features = [];
+        const sessions = await response.json();
+        console.log("Sessions fetched:", sessions);
+        addSessionPins(map, sessions);
+    } catch (error) {
+        console.error("Error loading sessions:", error);
+    }
+}
 
-        allEvents.forEach(doc => {
-            // Extract coordinates of the session
+function addSessionPins(map, sessions) {
+    const features = sessions.map(session => {
+        const { geolocation, length, ownerName, ownerEmail, subject } = session;
+        if (!geolocation) return null;
 
-            var coordinates = [doc.data().geolocation.longitude, doc.data().geolocation.latitude];
-
-            var sessionDesc = doc.data().description;
-
-            var sessionLength = doc.data().length;
-
-            var sessionOwner = doc.data().owner;
-
-            var sessionEmail = doc.data().ownerEmail;
-
-            features.push({
-                'type': 'Feature',
-                'properties': {
-                    'description': sessionDesc,
-                    'length': sessionLength,
-                    "owner": sessionOwner,
-                    "email": sessionEmail
-                },
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': coordinates
-                }
-            });
-
-        })
-
-        // Adds features (in our case, pins) to the map
-        // "places" is the name of this array of features
-        map.addSource('places', {
-            'type': 'geojson',
-            'data': {
-                'type': 'FeatureCollection',
-                'features': features
+        return {
+            type: 'Feature',
+            properties: {
+                description: `Session of ${length} minutes`,
+                owner: ownerName,
+                email: ownerEmail,
+                subject: subject || 'default'
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [geolocation.longitude, geolocation.latitude]
             }
+        };
+    }).filter(feature => feature !== null);
+
+    map.on('load', async () => {
+        const sessionSubjects = ["math", "writing", "business", "computer", "art", "trades", "default"];
+
+        try {
+            await Promise.all(sessionSubjects.map(subject => loadImageToMap(map, subject)));
+            addSessionPinsLayer(map, features);
+        } catch (error) {
+            console.error("Error loading images:", error);
+        }
+    });
+}
+
+function loadImageToMap(map, subject) {
+    return new Promise((resolve, reject) => {
+        map.loadImage(`http://localhost:8000/images/${subject}_pin.png`, (error, image) => {
+            if (error) return reject(error);
+            map.addImage(`${subject}_pin`, image);
+            resolve();
         });
+    });
+}
 
-        // Creates a layer above the map displaying the pins
-        // Add a layer showing the places.
-        map.addLayer({
-            'id': 'places',
-            'type': 'circle',
-            'source': 'places',
-            'paint': {   // customize colour and size
-                'circle-color': 'orange',
-                'circle-radius': 10,
-                'circle-stroke-width': 4,
-                'circle-stroke-color': '#ffffff'
-            }
-        });
+function addSessionPinsLayer(map, features) {
+    map.addSource('sessions', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: features
+        }
+    });
 
-        // When one of the "places" markers are clicked,
-        // create a popup that shows information 
-        // Everything related to a marker is save in features[] array
-        map.on('click', 'places', (e) => {
-            // Copy coordinates array.
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const description = e.features[0].properties.description;
-            const length = e.features[0].properties.length;
-            const owner = e.features[0].properties.owner;
-            const email = e.features[0].properties.email;
+    map.addLayer({
+        id: 'session-pins',
+        type: 'symbol',
+        source: 'sessions',
+        layout: {
+            'icon-image': ['concat', ['get', 'subject'], '_pin'],
+            'icon-size': 0.025,
+            'icon-rotate': 180
+        }
+    });
+
+    map.on('click', 'session-pins', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { description, owner, email } = e.features[0].properties;
+
+        new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(`${description} created by ${owner} (${email})`)
+            .addTo(map);
+    });
+
+    map.on('mouseenter', 'session-pins', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'session-pins', () => {
+        map.getCanvas().style.cursor = '';
+    });
+}
 
 
-            // Ensure that if the map is zoomed out such that multiple 
-            // copies of the feature are visible, the popup appears over 
-            // the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-            }
+// Update the initializeMap function to call loadSession
+function initializeMap(coords) {
+    var userLocation = [coords.lng, coords.lat];
+    mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: userLocation,
+        zoom: 15
+    });
 
-            new mapboxgl.Popup()
-                .setLngLat(coordinates)
-                .setHTML(description + " " + length + " created by " + owner + " (" + email + ")")
-                .addTo(map);
+    // Show user's location
+    showPoint(map, userLocation);
 
-        });
+    // Add session pins to the map
+    loadSession(map);
 
-        // Change the cursor to a pointer when the mouse hovers over the places layer.
-        map.on('mouseenter', 'places', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
+    // Add click handler for getting route
+    getClickedLocation(map, (clickedLocation) => {
+        getRoute(map, userLocation, clickedLocation);
+    });
+}
 
-        // Defaults cursor when not hovering over the places layer
-        map.on('mouseleave', 'places', () => {
-            map.getCanvas().style.cursor = '';
-        });
+// Load all of the session pin images in this function.
+function loadSessionPinImages(map, session) {
 
-    })
 }
 
 // ---------------------------------------------------------------------
@@ -300,6 +342,24 @@ async function getRoute(map, start, end) {
     const json = await query.json();
     const data = json.routes[0];
     const route = data.geometry.coordinates;
+    const steps = data.legs[0].steps;
+    const minutesDuration = Math.round(data.duration / 60);
+
+    const directionsPanel = document.getElementById('directions-panel');
+    directionsPanel.innerHTML = ""; // clear previous
+
+    // Estimate for travel time.
+    const timeEstimate = document.createElement("h4");
+    timeEstimate.textContent = `Estimated time: ${minutesDuration} min`;
+    directionsPanel.appendChild(timeEstimate);
+
+    // Written directions to location.
+    steps.forEach((step, index) => {
+        const instruction = document.createElement("p");
+        instruction.textContent = `${index + 1}. ${step.maneuver.instruction}`;
+        directionsPanel.appendChild(instruction);
+    });
+
     console.log("route is " + route);
     const geojson = {
         type: 'Feature',
@@ -309,6 +369,7 @@ async function getRoute(map, start, end) {
             coordinates: route
         }
     };
+
     // if the route already exists on the map, we'll reset it using setData
     if (map.getSource('route')) {
         map.getSource('route').setData(geojson);
@@ -335,121 +396,6 @@ async function getRoute(map, start, end) {
     }
 }
 
-// Listen for changes in the authentication state (e.g., user logs in or out)
-firebase.auth().onAuthStateChanged(user => {
-    // Only proceed if a user is currently logged in
-    if (user) {
-        // Get references to HTML elements used in the session status indicator
-        const indicator = document.getElementById("session-indicator");
-        const label = document.getElementById("session-indicator-label");
-        const deleteBtn = document.getElementById("delete-session-btn");
-        const statusMessageElem = document.getElementById("session-status-message");
-
-        // Set up a real-time listener on the current user's document in Firestore
-        db.collection("users").doc(user.uid).onSnapshot(userDoc => {
-            // Ensure the user's document exists
-            if (userDoc.exists) {
-                const userName = userDoc.data().name || "there";
-
-                // Get the current session ID for this user
-                const sessionId = userDoc.data().session;
-
-                // Check if the user currently has an active session
-                if (sessionId && sessionId !== "null") {
-                    // Green dot for active session
-                    indicator.style.backgroundColor = "green";
-                    label.textContent = "Active Session";
-                    deleteBtn.style.display = "inline-block";
-
-                    // Fetch session details from Firestore using the active session ID
-                    db.collection("sessions").doc(sessionId).get().then(sessionDoc => {
-                        // Ensure the session document exists in Firestore
-                        if (sessionDoc.exists) {
-                            const sessionData = sessionDoc.data();
-
-                            // Retrieve the session's start time and length from the session document
-                            const startTime = sessionData.timestamp?.toDate?.(); // Firestore Timestamp to JS Date
-                            const length = sessionData.length;
-
-
-                            console.log("Session Data:", sessionData);
-                            console.log("Start Time:", sessionData.timestamp);
-                            console.log("Length:", sessionData.length);
-
-                            // Check that both start time and session length are available
-                            if (startTime && length) {
-                                // Calculate the exact session end time based on its length
-                                let endTime = new Date(startTime);
-                                if (length === "30 minutes") {
-                                    endTime.setMinutes(endTime.getMinutes() + 30);
-                                } else if (length === "1 hour") {
-                                    endTime.setHours(endTime.getHours() + 1);
-                                } else if (length === "2 hours") {
-                                    endTime.setHours(endTime.getHours() + 2);
-                                }
-
-                                // Format the calculated end time as a readable string (e.g., "02:30 PM")
-                                const endTimeString = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                                // Update the UI with a friendly status message including user's name, session length, and exact end time
-                                statusMessageElem.textContent = `Hey ${userName}, your ${length} session ends at ${endTimeString}.`;
-
-                            } else {
-                                // Graceful fallback message in case session data is incomplete or missing
-                                statusMessageElem.textContent = `Hey ${userName}, session details aren't available.`;
-                            }
-                        }
-                    });
-
-                } else {
-                    // Red dot for no active session
-                    indicator.style.backgroundColor = "red";
-                    label.textContent = "No Active Session";
-                    deleteBtn.style.display = "none";
-
-                    // Friendly message for no active sessions
-                    statusMessageElem.textContent = `Hey ${userName}, you have no active sessions.`;
-                }
-            }
-        });  // <-- Closes onSnapshot listener
-    } // <-- Closes if(user)
-}); // <-- Closes firebase.auth listener
-
-
-
-
-function deleteCurrentUserSession() {
-    // Get the currently authenticated user from Firebase Auth
-    const user = firebase.auth().currentUser;
-
-    // Access the user's document in Firestore and retrieve the session ID
-    db.collection("users").doc(user.uid).get().then(doc => {
-        // Extract the session ID from the user's Firestore document
-        const sessionId = doc.data().session;
-
-        // Since the delete button is only shown when a session is active,
-        // we can safely proceed to delete the session document
-
-        // Step 1: Delete the session document from the "sessions" collection
-        db.collection("sessions").doc(sessionId).delete()
-            .then(() => {
-                // Step 2: After successfully deleting the session,
-                // update the user's document to set the "session" field to null
-                return db.collection("users").doc(user.uid).update({
-                    session: null
-                });
-            })
-            .then(() => {
-                // Step 3: Log success message to the console
-                console.log("Session deleted and user session field cleared.");
-            })
-            .catch(error => {
-                // Handle any errors that occur during deletion or update
-                console.error("Error deleting session:", error);
-            });
-    });
-}
-
 /**
  * Toggles the visibility of the session creation form.
  */
@@ -462,19 +408,130 @@ function toggleForm() {
     // Toggle visibility
     form.style.display = isFormVisible ? "none" : "block";
     button.style.display = isFormVisible ? "inline-block" : "none"; // Hide or show button
+
+    //  Populate course dropdown when form is shown
+    if (!isFormVisible) {
+        const courseSelect = document.getElementById("courseSelect");
+        const courses = JSON.parse(sessionStorage.getItem("courses"));
+
+        if (courses && courseSelect && courseSelect.options.length <= 1) {
+            console.log("[main.js] Populating course dropdown:", courses);
+            courseSelect.innerHTML = `<option value="">Select one...</option>`;
+            courses.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c;
+                option.textContent = c;
+                courseSelect.appendChild(option);
+            });
+        } else {
+            console.warn("[main.js] Dropdown already populated or no courses in sessionStorage");
+        }
+    }
+}
+
+function toggleMotivationBar() {
+  const bar = document.getElementById("motivationBar");
+  const computedDisplay = window.getComputedStyle(bar).display;
+  const isBarVisible = computedDisplay !== "none";
+
+  console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+  console.log("Toggling to:", isBarVisible ? "none" : "flex");
+
+  if (isBarVisible) {
+    bar.style.display = "none";
+    bar.classList.remove("d-flex");
+  } else {
+    bar.style.display = "flex";
+    bar.classList.add("d-flex");
+  }
 }
 
 
-// Enable the submit button only if both fields are filled
+
+
+
+// =========================
+// Enable button if all form fields are valid
+// =========================
 function checkFormReady() {
-    const desc = document.getElementById("sessionFormInput").value.trim();
-    const length = document.getElementById("sessionLengthValue").value.trim();
+    const desc = document.getElementById("sessionFormInput")?.value.trim();
+    const length = document.getElementById("sessionLengthValue")?.value.trim();
+    const course = document.getElementById("courseSelect")?.value;
     const submitBtn = document.getElementById("submitSessionBtn");
-    submitBtn.disabled = !(desc && length);
+
+    console.log("[Debug] Form state - desc:", desc, "length:", length, "course:", course);
+    if (submitBtn) {
+        submitBtn.disabled = !(desc && length && course);
+    }
 }
-//  Add listener to check description input on every keystroke
+
+// =========================
+// Add listeners to ALL inputs
+// =========================
 document.addEventListener("DOMContentLoaded", () => {
+    // Enable submit button on input
     const descInput = document.getElementById("sessionFormInput");
-    descInput.addEventListener("input", checkFormReady);
+    const courseSelect = document.getElementById("courseSelect");
+    const dropdown = document.getElementById("lengthInput");
+
+    if (descInput) descInput.addEventListener("input", checkFormReady);
+    if (courseSelect) courseSelect.addEventListener("change", checkFormReady);
+
+    // Listen for manual changes to session length value
+    const sessionLengthValue = document.getElementById("sessionLengthValue");
+    if (dropdown && sessionLengthValue) {
+        dropdown.addEventListener("click", () => {
+            setTimeout(checkFormReady, 50); // wait briefly for async DOM updates
+            const form = document.getElementById("sessionForm");
+            if (form) {
+                console.log("[Debug] Binding submit handler to sessionForm");
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    console.log("[Debug] Form submit triggered.");
+                    writeSessions();
+                    toggleForm();
+                });
+            } else {
+                console.warn("[Debug] sessionForm not found in DOM!");
+            }
+
+        });
+    }
+
 });
+document.getElementById("getMotivationBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("topicInput").value.trim();
+  const output = document.getElementById("motivationText");
+
+  console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+
+  if (!topic) {
+    output.textContent = "Please enter a topic first.";
+    return;
+  }
+
+  output.textContent = "Thinking... ✨";
+
+  try {
+    const response = await fetch("/api/ai/motivate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    const data = await response.json();
+
+    console.log("[getMotivationBtn] Server response:", data); // log full response
+
+    if (response.ok && data.message) {
+      output.textContent = data.message;
+    } else {
+      output.textContent = "Hmm, I couldn't come up with anything just now.";
+    }
+  } catch (err) {
+    console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
+    output.textContent = "Something went wrong. Please try again later.";
+  }
+});
+
 

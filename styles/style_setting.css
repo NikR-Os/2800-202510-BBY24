@@ -1,0 +1,44 @@
+.setting{
+    margin: auto;
+    display: grid;
+    grid-template-columns: 100px 100px ;
+    grid-template-rows: auto;
+    justify-content: space-evenly;
+}
+
+.btn{
+    padding: auto;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+#navbar.protanopia {
+    background-color: #a0a0a0;
+    color: #000;
+}
+body.protanopia {
+    background-color: #e0e0e0;
+    color: #000;
+}
+
+#nabar.tritanopia {
+    background-color: #a4a4fc;
+    color: #000;
+}
+body.tritanopia {
+    background-color: #d6d6ff;
+    color: #000;
+}
+
+#navbar.deuteranopia {
+    background-color: #a6a690;
+    color: #000;
+}
+body.deuteranopia {
+    background-color: #f0f0d0;
+    color: #000;
+}
+  

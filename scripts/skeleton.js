@@ -1,21 +1,30 @@
-//---------------------------------------------------
-// This function loads the parts of your skeleton 
-// (navbar, footer, and other things) into html doc. 
-//---------------------------------------------------
-function loadSkeleton() {
+// 👇 This runs as soon as the page loads
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search); // get query params
+  const action = urlParams.get('action'); // look for ?action=signup or ?action=login
 
-    firebase.auth().onAuthStateChanged(function (user) {
-        if (user) {                   
-		        // If the "user" variable is not null, then someone is logged in
-            // User is signed in.
-            // Do something for the user here.
-            console.log($('#navbarPlaceholder').load('./text/nav_after_login.html'));
-            console.log($('#footerPlaceholder').load('./text/footer.html'));
-        } else {
-            // No user is signed in.
-            console.log($('#navbarPlaceholder').load('./text/nav_before_login.html'));
-            console.log($('#footerPlaceholder').load('./text/footer.html'));
-        }
-    });
-}
-loadSkeleton(); //invoke the function
+document.getElementById("student-signup-choice").addEventListener("click", () => {
+  window.location.assign("login.html?action=student-signup")
+});
+document.getElementById("admin-signup-choice").addEventListener("click", () => {
+  window.location.assign("login.html?action=admin-signup")
+});
+
+  // Show the correct form based on the URL
+  if (action === "signup") 
+  {
+    document.getElementById("sign-up-choices").style.display = "block";
+  } 
+  else if (action === "student-signup") 
+  {
+    document.getElementById("student-signup-form").style.display = "block";
+  } 
+  else if (action === "admin-signup") 
+  {
+    document.getElementById("admin-signup-form").style.display = "block";
+  } 
+  else 
+  {
+    document.getElementById("login-form").style.display = "block";
+  }
+});

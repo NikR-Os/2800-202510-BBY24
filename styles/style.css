@@ -1,61 +1,63 @@
-
-.nav-link{
-    margin-top:20px;
-    color:green;
+.nav-link {
+  margin-top: 20px;
+  color: green;
 }
 
 .jumbotron {
-    padding-left: 20px;
+  padding-left: 20px;
 }
 
 .jumbotron p {
-    color: darkgreen;
+  color: darkgreen;
 }
 
 #session-indicator-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 #session-indicator {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    margin-top: 8px;
-    margin-left: 4px;
-    background-color: gray; /* default if no session info yet */
-    display: inline-block;
-    vertical-align: middle;
-  }
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-top: 8px;
+  margin-left: 4px;
+  background-color: gray;
+  /* default if no session info yet */
+  display: inline-block;
+  vertical-align: middle;
+}
 
-  #session-indicator-label {
-    font-size: 16px;
-    font-weight: 500;
-  }
+#session-indicator-label {
+  font-size: 16px;
+  font-weight: 500;
+}
 
-  #map {
-    padding: 1px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 24px;
-    border: white solid 12px;
-    outline: #4CAF50 solid 8px; 
-    border-radius: 35px; 
-  }
+#map {
+  padding: 1px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 24px;
+  border: white solid 12px;
+  outline: #4CAF50 solid 8px;
+  border-radius: 35px;
+}
 
-  footer {
-    padding-top: auto;
-    background: 'white';
-    color: white;
-    padding: 1.5rem;
-    width: 100%;
+footer {
+  padding-top: auto;
+  background: 'white';
+  color: white;
+  padding: 1.5rem;
+  width: 100%;
 }
 
 /* Just for the Welcome heading */
 .display-4 {
   display: inline-block;
-  padding: 8px 40px 8px 20px; /* Top Right Bottom Left */
+  padding: 8px 40px 8px 20px;
+  /* Top Right Bottom Left */
   color: white;
   background-color: #106e27;
   position: relative;
@@ -73,7 +75,8 @@
   background-color: #106e27;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
-  /* Button Group Container */
+
+/* Button Group Container */
 .button-group {
   display: flex;
   gap: 4px;
@@ -110,23 +113,36 @@
   font-size: 0.875rem;
 }
 
+
+
 /* Mobile Responsiveness */
 @media (max-width: 576px) {
   .button-group {
     flex-wrap: wrap;
   }
-  .dropdown, .btn {
+
+  .dropdown,
+  .btn {
     flex: 1 0 120px;
     margin-bottom: 4px;
   }
 }
 
 .btn-sage {
-  background-color: #738A6E; /* deeper sage/olive green */
+  background-color: #738A6E;
+  /* deeper sage/olive green */
   color: white;
   border: none;
 }
 
 .btn-sage:hover {
-  background-color: #738A6E; /* darker on hover */
+  background-color: #738A6E;
+  /* darker on hover */
+}
+
+
+#submitProgramCodeBtn.btn-dark {
+  background-color: #343a40 !important;
+  border-color: #343a40 !important;
+  color: white;
 }
