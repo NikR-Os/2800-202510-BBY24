@@ -1,25 +1,32 @@
-require("dotenv").config(); 
+require("dotenv").config();
 const http = require("http");
 const { Server } = require("socket.io");
 const express = require("express");                  // Import Express framework
-const mongoose = require("mongoose");   
+const mongoose = require("mongoose");
 const Student = require('./models/Student');        // Import Mongoose for MongoDB (student schema)
 const User = require('./models/User');         // Import Mongoose for MongoDB (student schema)
 console.log("User model loaded:", typeof Student === 'function');
 const Admin = require('./models/Admin');             // Import Mongoose for MongoDB (admin schema)
-console.log("User model loaded:", typeof Admin === 'function');   
+console.log("User model loaded:", typeof Admin === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
 const multer = require("multer");                  // Import multer for file uploads
 const path = require("path");                      // Import path for file paths
+const aiRoute = require("./ai");
+console.log("[server.js] AI route mounted at /api/ai");
 const app = express();  // Create Express app instance
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/../'));
-                             
+app.use(express.static(__dirname + '/../')); // This is not secure...
+app.use('/images', express.static(__dirname + '/../images'));
+
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
+app.use("/api/ai", aiRoute);
+
+
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
@@ -27,8 +34,8 @@ mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log("Connected to MongoDB"))
-.catch(err => console.error("MongoDB connection error:", err));
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
 // Set up multer for file uploads
 const storage = multer.memoryStorage(); // Store files in memory as Buffer
@@ -51,17 +58,14 @@ app.post('/signup', async (req, res) => {
   const type = req.query.type;
   let role;
 
-  if(type === "student")
-  {
+  if (type === "student") {
     role = Student;
   }
-  else if (type === "admin")
-  {
+  else if (type === "admin") {
     role = Admin;
   }
-  else
-  {
-    return res.status(410).json({ message: "Invalid type"});
+  else {
+    return res.status(410).json({ message: "Invalid type" });
   }
 
   try {
@@ -69,8 +73,7 @@ app.post('/signup', async (req, res) => {
     const existingUserEmail = await role.findOne({ email });
     const existingUserName = await role.findOne({ name })
     if (existingUserEmail ||
-        existingUserName) 
-    {
+      existingUserName) {
       return res.status(409).json({ message: "User already exists." });
     }
 
@@ -97,22 +100,49 @@ app.post('/signup', async (req, res) => {
 
 
 // Route: Login
+// Route: Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found." });
-  }
+  try {
+    // First, check if email exists in Student collection
+    let user = await Student.findOne({ email });
+    let role = "student";
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ message: "Invalid credentials." });
+    // If not in Student, check Admin collection
+    if (!user) {
+      user = await Admin.findOne({ email });
+      role = "admin";
+    }
+
+    // Still no match? User not found
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Validate password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      role: role,
+      program: user.program || null,
+      courses: user.courses || null
+    });
+
+
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error." });
   }
-  res.status(200).json({ userId: user._id, name: user.name, role: user.role});
 });
 
 //  Route: Get user document by ID
@@ -120,15 +150,62 @@ app.get('/users/:userId', async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await User.findById(userId);
+    // First, check if email exists in Student collection
+    let user = await Student.findOne({ email });
+    let role = "student";
+
+    // If not in Student, check Admin collection
+    if (!user) {
+      user = await Admin.findOne({ email });
+      role = "admin";
+    }
+
+    // Still no match? User not found
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching user." });
+
+    // Validate password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      role: role,
+      program: user.program || null,
+      courses: user.courses || null
+    });
+
+
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error." });
   }
 });
+
+app.post('/programCreation', async (req, res) => {
+  
+});
+
+//  Route: Get user document by ID
+// app.get('/users/:userId', async (req, res) => {
+//   const { userId } = req.params;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found." });
+//     }
+//     res.status(200).json(user);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching user." });
+//   }
+// });
+
 
 // Route: Update user's session field
 app.patch('/users/:userId/session', async (req, res) => {
@@ -177,7 +254,9 @@ app.post('/sessions', async (req, res) => {
       length,
       timestamp,
       members,
-      course
+      course,
+      program,
+      courses
     } = req.body;
 
     const newSession = new Session({
@@ -187,8 +266,12 @@ app.post('/sessions', async (req, res) => {
       length,
       timestamp,
       members,
-      course
+      course,
+      program,
+      courses
     });
+
+
 
     const savedSession = await newSession.save();
     res.status(201).json(savedSession);
@@ -216,12 +299,12 @@ app.delete('/sessions/:sessionId', async (req, res) => {
 
 // Route: Get all sessions
 app.get('/sessions', async (req, res) => {
-    try {
-        const sessions = await Session.find();
-        res.json(sessions);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching sessions." });
-    }
+  try {
+    const sessions = await Session.find();
+    res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching sessions." });
+  }
 });
 
 // Start server
@@ -253,7 +336,7 @@ io.on("connection", (socket) => {
   // Handle incoming private messages
   socket.on("private message", async ({ toUsername, fromUserId, message }) => {
     try {
-      const sender = await User.findById(fromUserId);
+      const sender = await Student.findById(fromUserId);
       if (!sender) {
         console.warn("Sender not found in DB:", fromUserId);
         return;
@@ -301,6 +384,7 @@ app.get('/profile/:id', async (req, res) => {
   try {
     // Check student first
     const student = await Student.findById(id);
+    console.log("Student found:", student);
     if (student) {
       return res.json({
         name: student.name,
@@ -308,12 +392,15 @@ app.get('/profile/:id', async (req, res) => {
         role: student.role || 'student', // Ensure role exists
         program: student.program,
         year: student.year,
-        courses: student.courses || []
+        courses: student.courses || [],
+        session: student.session || null    // ADDED THIS LINE
+
       });
     }
 
     // Then check admin
     const admin = await Admin.findById(id);
+    console.log("Admin found:", admin);
     if (admin) {
       return res.json({
         name: admin.name,
@@ -347,10 +434,10 @@ const updateProfile = async (model, id, updates) => {
 // Update student profile
 app.put('/profile/student/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, program, year, courses } = req.body;
+  const { name, program, year, courses, session } = req.body;
 
   try {
-    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses });
+    const updatedStudent = await updateProfile(Student, id, { name, program, year, courses, session });
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
@@ -373,6 +460,19 @@ app.put('/profile/admin/:id', async (req, res) => {
     res.json(updatedAdmin);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+const Program = require('./models/Program'); // ⬅️ If not already present
+
+app.get('/programs/:code', async (req, res) => {
+  try {
+    const program = await Program.findOne({ code: req.params.code });
+    if (!program) return res.status(404).json({ message: "Program not found." });
+    res.json(program);
+  } catch (err) {
+    console.error("Program lookup error:", err);
+    res.status(500).json({ message: "Server error." });
   }
 });
 

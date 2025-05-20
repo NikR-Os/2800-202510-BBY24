@@ -87,7 +87,7 @@ showMap();
 
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({center: userLocation, zoom: 15})
+        map.flyTo({ center: userLocation, zoom: 15 })
     })
 }
 
@@ -99,8 +99,6 @@ function updateLength(length) {
 }
 
 // Fetch all sessions and populate the map
-
-
 async function loadSessions(map) {
     try {
         const response = await fetch('http://localhost:8000/sessions');
@@ -118,69 +116,86 @@ async function loadSessions(map) {
 }
 
 function addSessionPins(map, sessions) {
-
     const features = sessions.map(session => {
-        const { geolocation, length, ownerName, ownerEmail } = session;
+        const { geolocation, length, ownerName, ownerEmail, subject } = session;
         if (!geolocation) return null;
 
         return {
-            'type': 'Feature',
-            'properties': {
-                'description': `Session of ${length} minutes`,
-                'owner': ownerName,
-                'email': ownerEmail
+            type: 'Feature',
+            properties: {
+                description: `Session of ${length} minutes`,
+                owner: ownerName,
+                email: ownerEmail,
+                subject: subject || 'default'
             },
-            'geometry': {
-                'type': 'Point',
-                'coordinates': [geolocation.longitude, geolocation.latitude]
+            geometry: {
+                type: 'Point',
+                coordinates: [geolocation.longitude, geolocation.latitude]
             }
         };
     }).filter(feature => feature !== null);
 
-    map.on('load', () => {
-        // Add features (pins) to the map
-        map.addSource('sessions', {
-            'type': 'geojson',
-            'data': {
-                'type': 'FeatureCollection',
-                'features': features
-            }
-        });
+    map.on('load', async () => {
+        const sessionSubjects = ["math", "writing", "business", "computer", "art", "trades", "default"];
 
-        map.addLayer({
-            'id': 'session-pins',
-            'type': 'circle',
-            'source': 'sessions',
-            'paint': {
-                'circle-color': 'orange',
-                'circle-radius': 10,
-                'circle-stroke-width': 4,
-                'circle-stroke-color': '#ffffff'
-            }
-        });
+        try {
+            await Promise.all(sessionSubjects.map(subject => loadImageToMap(map, subject)));
+            addSessionPinsLayer(map, features);
+        } catch (error) {
+            console.error("Error loading images:", error);
+        }
+    });
+}
 
-        // Create popups for session markers
-        map.on('click', 'session-pins', (e) => {
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const { description, owner, email } = e.features[0].properties;
-
-            new mapboxgl.Popup()
-                .setLngLat(coordinates)
-                .setHTML(`${description} created by ${owner} (${email})`)
-                .addTo(map);
-        });
-
-        // Change the cursor to a pointer when hovering over the pins
-        map.on('mouseenter', 'session-pins', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-
-        // Reset cursor when not hovering
-        map.on('mouseleave', 'session-pins', () => {
-            map.getCanvas().style.cursor = '';
+function loadImageToMap(map, subject) {
+    return new Promise((resolve, reject) => {
+        map.loadImage(`http://localhost:8000/images/${subject}_pin.png`, (error, image) => {
+            if (error) return reject(error);
+            map.addImage(`${subject}_pin`, image);
+            resolve();
         });
     });
 }
+
+function addSessionPinsLayer(map, features) {
+    map.addSource('sessions', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: features
+        }
+    });
+
+    map.addLayer({
+        id: 'session-pins',
+        type: 'symbol',
+        source: 'sessions',
+        layout: {
+            'icon-image': ['concat', ['get', 'subject'], '_pin'],
+            'icon-size': 0.025,
+            'icon-rotate': 180
+        }
+    });
+
+    map.on('click', 'session-pins', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { description, owner, email } = e.features[0].properties;
+
+        new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(`${description} created by ${owner} (${email})`)
+            .addTo(map);
+    });
+
+    map.on('mouseenter', 'session-pins', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'session-pins', () => {
+        map.getCanvas().style.cursor = '';
+    });
+}
+
 
 // Update the initializeMap function to call loadSession
 function initializeMap(coords) {
@@ -203,6 +218,11 @@ function initializeMap(coords) {
     getClickedLocation(map, (clickedLocation) => {
         getRoute(map, userLocation, clickedLocation);
     });
+}
+
+// Load all of the session pin images in this function.
+function loadSessionPinImages(map, session) {
+
 }
 
 // ---------------------------------------------------------------------
@@ -388,19 +408,130 @@ function toggleForm() {
     // Toggle visibility
     form.style.display = isFormVisible ? "none" : "block";
     button.style.display = isFormVisible ? "inline-block" : "none"; // Hide or show button
+
+    //  Populate course dropdown when form is shown
+    if (!isFormVisible) {
+        const courseSelect = document.getElementById("courseSelect");
+        const courses = JSON.parse(sessionStorage.getItem("courses"));
+
+        if (courses && courseSelect && courseSelect.options.length <= 1) {
+            console.log("[main.js] Populating course dropdown:", courses);
+            courseSelect.innerHTML = `<option value="">Select one...</option>`;
+            courses.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c;
+                option.textContent = c;
+                courseSelect.appendChild(option);
+            });
+        } else {
+            console.warn("[main.js] Dropdown already populated or no courses in sessionStorage");
+        }
+    }
+}
+
+function toggleMotivationBar() {
+  const bar = document.getElementById("motivationBar");
+  const computedDisplay = window.getComputedStyle(bar).display;
+  const isBarVisible = computedDisplay !== "none";
+
+  console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+  console.log("Toggling to:", isBarVisible ? "none" : "flex");
+
+  if (isBarVisible) {
+    bar.style.display = "none";
+    bar.classList.remove("d-flex");
+  } else {
+    bar.style.display = "flex";
+    bar.classList.add("d-flex");
+  }
 }
 
 
-// Enable the submit button only if both fields are filled
+
+
+
+// =========================
+// Enable button if all form fields are valid
+// =========================
 function checkFormReady() {
-    const desc = document.getElementById("sessionFormInput").value.trim();
-    const length = document.getElementById("sessionLengthValue").value.trim();
+    const desc = document.getElementById("sessionFormInput")?.value.trim();
+    const length = document.getElementById("sessionLengthValue")?.value.trim();
+    const course = document.getElementById("courseSelect")?.value;
     const submitBtn = document.getElementById("submitSessionBtn");
-    submitBtn.disabled = !(desc && length);
+
+    console.log("[Debug] Form state - desc:", desc, "length:", length, "course:", course);
+    if (submitBtn) {
+        submitBtn.disabled = !(desc && length && course);
+    }
 }
-//  Add listener to check description input on every keystroke
+
+// =========================
+// Add listeners to ALL inputs
+// =========================
 document.addEventListener("DOMContentLoaded", () => {
+    // Enable submit button on input
     const descInput = document.getElementById("sessionFormInput");
-    descInput.addEventListener("input", checkFormReady);
+    const courseSelect = document.getElementById("courseSelect");
+    const dropdown = document.getElementById("lengthInput");
+
+    if (descInput) descInput.addEventListener("input", checkFormReady);
+    if (courseSelect) courseSelect.addEventListener("change", checkFormReady);
+
+    // Listen for manual changes to session length value
+    const sessionLengthValue = document.getElementById("sessionLengthValue");
+    if (dropdown && sessionLengthValue) {
+        dropdown.addEventListener("click", () => {
+            setTimeout(checkFormReady, 50); // wait briefly for async DOM updates
+            const form = document.getElementById("sessionForm");
+            if (form) {
+                console.log("[Debug] Binding submit handler to sessionForm");
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    console.log("[Debug] Form submit triggered.");
+                    writeSessions();
+                    toggleForm();
+                });
+            } else {
+                console.warn("[Debug] sessionForm not found in DOM!");
+            }
+
+        });
+    }
+
 });
+document.getElementById("getMotivationBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("topicInput").value.trim();
+  const output = document.getElementById("motivationText");
+
+  console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+
+  if (!topic) {
+    output.textContent = "Please enter a topic first.";
+    return;
+  }
+
+  output.textContent = "Thinking... ✨";
+
+  try {
+    const response = await fetch("/api/ai/motivate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    const data = await response.json();
+
+    console.log("[getMotivationBtn] Server response:", data); // log full response
+
+    if (response.ok && data.message) {
+      output.textContent = data.message;
+    } else {
+      output.textContent = "Hmm, I couldn't come up with anything just now.";
+    }
+  } catch (err) {
+    console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
+    output.textContent = "Something went wrong. Please try again later.";
+  }
+});
+
 
