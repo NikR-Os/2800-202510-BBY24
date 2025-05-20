@@ -3,11 +3,15 @@ const http = require("http");
 const { Server } = require("socket.io");
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");   
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const Student = require('./models/Student');        // Import Mongoose for MongoDB (student schema)
 const User = require('./models/User');         // Import Mongoose for MongoDB (student schema)
 console.log("User model loaded:", typeof Student === 'function');
 const Admin = require('./models/Admin');             // Import Mongoose for MongoDB (admin schema)
-console.log("User model loaded:", typeof Admin === 'function');   
+console.log("User model loaded:", typeof Admin === 'function');
+const Program = require('./models/Program');
+console.log("User model loaded:", typeof Program === 'function');
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
@@ -29,6 +33,20 @@ const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI)
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.error("MongoDB connection error:", err));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key', // Make sure you define this in .env
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: mongoURI, // your MongoDB URI
+    collectionName: 'sessions'
+}),
+cookie: {
+  maxAge: 1000 * 60 * 60 * 24, // 1 day
+  httpOnly: true
+}
+}));
 
 // Route: Signup
 app.post('/signup', async (req, res) => {
@@ -111,6 +129,8 @@ app.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials." });
     }
+    req.session.userId = user._id;
+    req.session.role = role;
 
     res.status(200).json({
       userId: user._id,
@@ -393,35 +413,94 @@ app.put('/profile/admin/:id', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.render('index', { 
-    user: User || null, 
+    title: 'StudyNav',
     scripts: ['/scripts/skeleton.js', '/scripts/script.js'],
-    styles: ['style_index.css']
+    styles: ['./styles/style_index.css']
   });
 });
 app.get('/main', (req, res) => {
+  console.log(User.program);
   res.render('main',{
-    user: User || null,
-    scripts: ['/scripts/main.js', '/scripts/script.js', 
+    title: 'StudyNav',
+    code: '12345',
+    scripts: ['https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js',
+      'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js',
+      './socket.io/socket.io.js','/scripts/main.js',  
       '/scripts/skeleton.js', '/scripts/session.js',
       '/scripts/chatbox.js', '/scripts/location.js',
-      'https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js',
-      'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'],
-    styles: []
+      '/scripts/script.js', './scripts/program.js'],
+    styles: ['https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css']
   });
 });
 app.get('/setting', (req, res) => {
   res.render('setting', {
-    user: User || null,
+    title: 'Setting',
     scripts: ['/scripts/setting.js'],
-    styles: ['style_setting.css']
+    styles: ['./styles/style_setting.css']
   });
 });
 app.get('/login', (req, res) => {
   res.render('login', {
-    user:null,
+    title: 'Login',
     scripts: ['/scripts/skeleton.js', '/scripts/script.js'],
-    styles: ['style_login.css']
+    styles: ['./styles/style_login.css']
   });
+});
+app.get('/profile', async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.redirect("/login");
+  }
+
+  let user = await Student.findById(userId);
+  let role = "student";
+
+  if (!user) {
+    user = await Admin.findById(userId);
+    role = "admin";
+  }
+
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+  if (role == "admin"){
+    res.render("profile", { 
+      user, 
+      role,
+      title: 'Profile',
+      scripts: ['/scripts/admin_profile.js'],
+      styles: ['./styles/style_admin_profile.css'] 
+    });
+  } else {
+    res.render("profile", { 
+      user, 
+      role,
+      title: 'Profile',
+      scripts: ['/scripts/student_profile.js'],
+      styles: ['./styles/style_student_profile.css'] 
+    });
+  }
+  
+});
+app.get('/programs/:code', async (req, res) => {
+  try {
+    const accessCode = req.params.code;
+    const program = await Program.findOne({ code: accessCode });
+
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    res.json(program);
+  } catch (err) {
+    console.error('Error fetching program:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/navbar', (req, res) => {
+  res.render('template/nabar');
 });
 
 server.listen(port, () => {

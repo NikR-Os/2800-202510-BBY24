@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!userId) {
         alert('Please login first');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
     }
 
     if (userRole !== 'admin') {
         alert('You do not have admin privileges');
-        window.location.href = 'student_profile.html';
+        window.location.href = '/profile';
         return;
     }
 

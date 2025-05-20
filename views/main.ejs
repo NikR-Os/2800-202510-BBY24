@@ -1,138 +1,153 @@
 <%- include("template/header") %>
-    <div class="jumbotron mt-3">
-        <h1 class="display-4">Welcome!</h1>
+<!-- Nikolas - Welcome Hero Screen-->
+  <div class="jumbotron mt-3">
+    <h1 class="display-4">Welcome!</h1>
+  </div>
+
+
+  <!-- Flex row to hold session indicator and form side-by-side -->
+  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
+
+    <!-- Enhanced session status display -->
+    <div id="session-indicator-wrapper"
+      class=" mb-2 d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded" style="min-width: 300px;">
+
+      <div class="d-flex align-items-center gap-2">
+        <div id="session-status-message" class="mt-2 text-info"></div>
+        <div id="session-indicator" style="width: 12px; height: 12px; border-radius: 50%;"></div>
+        <span id="session-indicator-label">Checking session...</span>
+        <button id="delete-session-btn" type="button" class="btn btn-outline-danger btn-sm ms-auto"
+          title="Delete Session">×</button>
+      </div>
+
     </div>
 
+    <!-- Create Session button + popup form -->
 
-    <!-- Flex row to hold session indicator and form side-by-side -->
-    <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
+    <div class="d-flex flex-column align-items-start gap-1"> <!--holds session and chat button-->
+      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
 
-        <!-- Enhanced session status display -->
-        <div id="session-indicator-wrapper"
-            class=" mb-2 d-flex flex-column align-items-start gap-2 bg-light p-3 border rounded"
-            style="min-width: 300px;">
+      <div id="sessionFormPopup" style="display: none;">
+        <form id="sessionForm" class="border rounded p-3 bg-light">
+          <h5>Create a Study Session</h5>
 
-            <div class="d-flex align-items-center gap-2">
-                <div id="session-status-message" class="mt-2 text-info"></div>
-                <div id="session-indicator" style="width: 12px; height: 12px; border-radius: 50%;"></div>
-                <span id="session-indicator-label">Checking session...</span>
-                <button id="delete-session-btn" type="button" class="btn btn-outline-danger btn-sm ms-auto"
-                    title="Delete Session">×</button>
-            </div>
+          <label for="formGroupExampleInput" class="form-label">Session Description</label>
+          <input type="text" class="form-control mb-3" id="sessionFormInput" placeholder="Describe your session"
+            required>
 
-        </div>
+          <!-- Hidden input to store the selected session length -->
+          <input type="hidden" id="sessionLengthValue">
 
-        <!-- Create Session button + popup form -->
-
-        <div class="d-flex flex-column align-items-start gap-1"> <!--holds session and chat button-->
-            <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
-
-            <div id="sessionFormPopup" style="display: none;">
-                <form class="border rounded p-3 bg-light"
-                    onsubmit="event.preventDefault(); writeSessions(); toggleForm();">
-                    <h5>Create a Study Session</h5>
-
-                    <label for="formGroupExampleInput" class="form-label">Session Description</label>
-                    <input type="text" class="form-control mb-3" id="sessionFormInput"
-                        placeholder="Describe your session" required>
-
-                    <!-- Hidden input to store the selected session length -->
-                    <input type="hidden" id="sessionLengthValue">
-
-                    <div class="dropdown mb-3">
-                        <button class="btn btn-secondary dropdown-toggle" id="lengthInput" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Length
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" id="length30" href="#" onclick="updateLength('30 minutes')">30
-                                    minutes</a>
-                            </li>
-                            <li><a class="dropdown-item" id="length60" href="#" onclick="updateLength('1 hour')">1
-                                    hour</a></li>
-                            <li><a class="dropdown-item" id="length120" href="#" onclick="updateLength('2 hours')">2
-                                    hours</a></li>
-                        </ul>
-                    </div>
-
-                    <!--  Disabled by default -->
-                    <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled>Submit Form</button>
-                    <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
-                </form>
-            </div>
-
-            <!-- Chat Button and Chat Popup -->
-            <!-- Chat Button -->
-            <button id="chatboxBtn" class="btn btn-sage btn-sm mb-2 w-100 position-relative" onclick="toggleChatForm()">
-                Chatbox
-                <span id="chatNotification"
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    style="display:none;">
-                    !
-                </span>
+          <div class="dropdown mb-3">
+            <button class="btn btn-secondary dropdown-toggle" id="lengthInput" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Length
             </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" id="length30" href="#" onclick="updateLength('30 minutes')">30 minutes</a>
+              </li>
+              <li><a class="dropdown-item" id="length60" href="#" onclick="updateLength('1 hour')">1 hour</a></li>
+              <li><a class="dropdown-item" id="length120" href="#" onclick="updateLength('2 hours')">2 hours</a></li>
+            </ul>
+          </div>
 
-            <!-- Hidden Chat Form -->
-            <div id="chatFormPopup" style="display: none;">
-                <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); sendMessage();">
-                    <h5>Send a Message</h5>
+          <!-- Hidden element with program access code -->
+          <div id="program-data" data-code="<%= code %>"></div>
+          
+          <div class="mb-3">
+            <label for="courseSelect" class="form-label">Choose a course</label>
+            <select class="form-select" id="courseSelect" required>
+              <option value="">Select one...</option>
+            </select>
+          </div>
 
-                    <label for="recipientUsername" class="form-label">Recipient Username</label>
-                    <input type="text" class="form-control mb-3" id="recipientUsername" autocomplete="off"
-                        placeholder="Enter recipient username" required>
+          <!--  Disabled by default -->
+          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled
+            onclick="console.log('[Debug] Submit button clicked')">
+            Submit Form
+          </button>
+          <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
+        </form>
+      </div>
 
+      <!-- Chat Button and Chat Popup -->
+      <!-- Chat Button -->
+      <button id="chatboxBtn" class="btn btn-sage btn-sm mb-2 w-100 position-relative" onclick="toggleChatForm()">
+        Chatbox
+        <span id="chatNotification"
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">
+          !
+        </span>
+      </button>
 
-                    <label for="chatInput" class="form-label">Your Message</label>
-                    <input type="text" class="form-control mb-3" id="chatInput" placeholder="Type your message"
-                        required>
+      <!-- Hidden Chat Form -->
+      <div id="chatFormPopup" style="display: none;">
+        <form class="border rounded p-3 bg-light" onsubmit="event.preventDefault(); sendMessage();">
+          <h5>Send a Message</h5>
 
-                    <button type="submit" class="btn btn-success">Send</button>
-                    <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
-
-                    <ul id="chat-messages" class="mt-3 list-unstyled text-start"></ul>
-                </form>
-            </div>
-        </div>
-
-
-        <!-- MAPBOX -->
-        <div id='map' style='width: 90%; height: 600px; position: relative;'>
-            <!-- Location overlay inside the map -->
-            <div id="location" style="
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            z-index: 1;
-            pointer-events: none;">
-                Detecting your location...
-            </div>
-
-        </div>
-        <!-- Recenter -->
-        <div>
-            <button id="recenter-button">Recenter The Map</button>
-        </div>
-
-        <div id="pop-menu">
-            <div id="directions-panel" style="margin-top: 10px;">
-            </div>
+          <label for="recipientUsername" class="form-label">Recipient Username</label>
+          <input type="text" class="form-control mb-3" id="recipientUsername" autocomplete="off"
+            placeholder="Enter recipient username" required>
 
 
-            <!-- Directions -->
-            <div>
-                <div class="card">
-                </div>
-            </div>
+          <label for="chatInput" class="form-label">Your Message</label>
+          <input type="text" class="form-control mb-3" id="chatInput" placeholder="Type your message" required>
 
-            <div id="pop-menu">
-                <div id="directions-panel" style="margin-top: 10px;">
+          <button type="submit" class="btn btn-success">Send</button>
+          <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
 
-                </div>
-            </div>
-        </div>
+          <ul id="chat-messages" class="mt-3 list-unstyled text-start"></ul>
+        </form>
+      </div>
     </div>
+  </div>
+
+    <div id="map-container" style='width: 90%; height: 600px; margin-left: auto; margin-right: auto; position: relative;'>
+      <!-- MAPBOX -->
+      <div id='map' style='width: 100%; height: 600px; position: relative;'>
+      </div>
+      <!-- Location overlay inside the map -->
+      <div id="location" style="
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    z-index: 1;
+    pointer-events: none;">
+        Detecting your location...
+      </div>
+    </div>
+    
+    <!-- Recenter -->
+    <div>
+      <br>
+      <button id="recenter-button">Recenter The Map</button>
+      <button id="enter-program-btn">Add Program</button>
+      <div id="program-code-form" style="display: none;" class="mt-2">
+        <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code" />
+        <button id="submitProgramCodeBtn" class="btn btn-primary mt-2">Submit</button>
+      </div>
+
+    </div>
+
+    <div id="pop-menu">
+      <div id="directions-panel" style="margin-top: 10px;">
+      </div>
+
+
+      <!-- Directions -->
+      <div>
+        <div class="card">
+        </div>
+      </div>
+
+      <div id="pop-menu">
+        <div id="directions-panel" style="margin-top: 10px;">
+
+        </div>
+      </div>
+
 <%- include("template/footer") %>

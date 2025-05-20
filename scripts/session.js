@@ -138,6 +138,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+document.addEventListener("DOMContentLoaded", async () => {
+    const courseSelect = document.getElementById('courseSelect');
+    const programData = document.getElementById('program-data');
+    const code = programData.dataset.code;
+
+    if (!code) {
+    console.error("Program code not found in DOM.");
+    return;
+    }
+
+    try {
+    const res = await fetch(`/programs/${code}`);
+    if (!res.ok) throw new Error('Failed to fetch program data');
+    const program = await res.json();
+
+    courseSelect.innerHTML = '<option value="">Select one...</option>';
+
+    program.courses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course;
+        option.textContent = course;
+        courseSelect.appendChild(option);
+    });
+
+    console.log("Courses loaded.");
+    } catch (error) {
+    console.error('Error loading courses:', error);
+    }
+});
+
 // ================================
 // Delete Current Session
 // ================================

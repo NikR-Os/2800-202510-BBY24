@@ -26,7 +26,7 @@ const programSchema = new mongoose.Schema({
   },
 
   // Code for students to enter before joining
-  accessCode: {
+  code: {
     type: String,
     required: false
   },

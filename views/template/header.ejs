@@ -1,7 +1,7 @@
 <html lang="en">
 
 <head>
-  <title>StudyNav</title>
+  <title><%- title %></title>
   <meta name="comp1800 template" content="My 1800 App">
 
   <!-- Required meta tags -->
@@ -18,16 +18,20 @@
 
   <!-- Other libraries go here -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="styles/style_student_profile.css">
 
   <!-- Link to styles of your own -->
   <!-- <link rel="stylesheet" href="./styles/style.css"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link rel="stylesheet" href="./styles/style.css">
+  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="stylesheet" href="/styles/style_navbar.css">
   <% if (styles) { %>
     <% styles.forEach(function(styles) { %>
-      <link rel="stylesheet" href="./styles/<%= styles %>"></link>
+      <link rel="stylesheet" href="<%= styles %>"></link>
     <% }); %>
   <% } %>
+  
 
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
@@ -36,8 +40,4 @@
 </head>
 
 <body>
-  <% if (user) { %>
-    <%- include("nav_after_login") %>
-  <% } else { %>
-    <%- include("nav_before_login") %>
-  <% } %>
+  <%- include("navbar") %>

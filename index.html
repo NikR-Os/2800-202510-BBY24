@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>StudyNav</title>
+    <meta name="comp1800 template" content="My 1800 App" />
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap Library CSS CDN go here -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+
+    <!-- Boostrap Library JS CDN  go here -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Other libraries go here -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.js"></script>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.css"
+    />
+    
+
+    <!-- Link to styles of your own -->
+    <!-- <link rel="stylesheet" href="./styles/style.css"> -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./styles/style_index.css" />
+    <link rel="stylesheet" href="./styles/style_navbar.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
+  </head>
+
+  <body>
+    <div id="firebaseui-auth-container"></div>
+
+    <!------------------------------>
+    <!-- Your HTML Layout go here -->
+    <!------------------------------>
+    <!-- Stuff for body goes here -->
+
+    <!-- our own navbar goes here -->
+    <div id="navbarPlaceholder"></div>
+
+    <main class="flex-grow-1 container py-4">
+      <!-- Welcome Section -->
+      <div class="welcome-section text-center">
+          <h1 id="greeting" class="display-5 fw-bold">Welcome to StudyNav!</h1>
+          <p class="lead">Find your perfect study space at BCIT</p>
+          
+          <!-- Study Image -->
+          <img src="images/Frame1.png" 
+               alt="BCIT students studying together"
+               class="study-hero-img"
+               loading="eager">
+      </div>
+      
+      <!-- Auth Buttons -->
+      <div class="button-container d-flex flex-md-row flex-column justify-content-center gap-3">
+        <a id="create-account-btn" class="btn btn-success btn-lg px-4 mb-md-0 mb-2" href="login.html?action=signup">
+          <i class="fas fa-user-plus me-2"></i> Sign Up
+        </a>
+          <a id="login-btn" class="btn btn-outline-success btn-lg px-4" href="login.html?action=login">
+              <i class="fas fa-sign-in-alt me-2"></i> Log In
+          </a>
+      </div>
+  </main>
+
+  <footer class="mt-auto py-3 border-top">
+      <div class="container d-flex flex-wrap justify-content-between align-items-center">
+          <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
+          <div class="social-links">
+              <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+      </div>
+  </footer>
+
+    <!---------------------------------------------->
+    <!-- Your own JavaScript functions go here    -->
+    <!---------------------------------------------->
+
+    <!-- Link to scripts of your own -->
+    <script src ="./scripts/navbar.js"></script>
+    <script src="./scripts/script.js"></script>
+    <script src="./scripts/skeleton.js"></script>
+  </body>
+</html>
