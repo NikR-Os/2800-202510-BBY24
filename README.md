@@ -1,6 +1,11 @@
 # Project Name
 2800-202510-BBY24 - StudyNav
 
+## Overview
+StudyNav is a web application designed to connect students for productive study sessions. The application solves the problem of finding compatible study partners by matching users based on location, courses, and availability.
+
+---
+
 # About Us
 Team Name: BBY 24
 Team Members:
@@ -11,8 +16,6 @@ Team Members:
 - Jonathan Yeh Set 
 - Carl Manansala Set 
 
-## Overview
-StudyNav is a web application designed to connect students for productive study sessions. The application solves the problem of finding compatible study partners by matching users based on location, courses, and availability.
 
 ---
 
@@ -36,7 +39,6 @@ StudyNav is a web application designed to connect students for productive study 
   - Oversee study sessions
   - Access administrative tools
 
-
 ---
 
 ## Technologies Used
@@ -52,7 +54,7 @@ StudyNav is a web application designed to connect students for productive study 
 
 ## Installation and Setup
 
-### Prerequisites
+### Prerequisites:
 1. **Node.js and npm**: Ensure you have Node.js (v14 or later) installed, which includes npm.
    - Verify installation:
      ```
@@ -63,7 +65,7 @@ StudyNav is a web application designed to connect students for productive study 
 
 2. **MongoDB Account**: You'll need a MongoDB Atlas account or local MongoDB instance.
 
-### Setup Instructions
+### Setup Instructions:
 1. Clone the repository:
    ```
    git clone https://github.com/NikR-Os/2800-202510-BBY24
@@ -117,6 +119,7 @@ npm install
 │   │   ├── Session.js
 │   │   ├── Student.js
 │   │   └── User.js
+│   ├── ai.js
 │   └── server.js
 │
 ├── favicon/
@@ -174,7 +177,7 @@ npm install
 
 ## Acknowledgments
 
-- Code snippets for ___ algoirthm were adapted from resources such as [Stack Overflow](https://stackoverflow.com/) and [MDN Web Docs](https://developer.mozilla.org/).
+- Code snippets for a few algoirthm were adapted from resources such as [Stack Overflow](https://stackoverflow.com/) and [MDN Web Docs](https://developer.mozilla.org/).
 - Icons sourced from [FontAwesome](https://fontawesome.com/) and images from [Freepik](https://freepik.com/).
 
 ---
