@@ -1,5 +1,7 @@
 .DS_Store
 *.logs
 node_modules/
+package-lock.json
 .vscode/
 firebaseAPI.js
+.env
