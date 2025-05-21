@@ -14,6 +14,18 @@ const dom = {
   toggle: null
 };
 
+// update the username in the navbar
+function updateNavbarUserInfo() {
+  // get elements
+  const usernameDisplay = document.getElementById('usernameDisplay');
+  const userRoleDisplay = document.getElementById('userRoleDisplay');
+  
+  if (usernameDisplay && userRoleDisplay) {
+    usernameDisplay.textContent = sessionStorage.getItem('userName') || 'Guest';
+    userRoleDisplay.textContent = sessionStorage.getItem('userRole') || 'Visitor';
+  }
+}
+
 // Main initialization function
 async function initNavbar() {
   // dynamic loading 
@@ -28,6 +40,9 @@ async function initNavbar() {
   
   // Handle initial responsive state
   handleResize();
+
+   updateNavbarUserInfo(); // Just update the username and role in the navbar
+
 }
 
 // Dynamic navbar loader
@@ -216,6 +231,9 @@ function toggleSidebar() {
         if (response.ok && data.success) {
           // Clear client-side session
           sessionStorage.clear();
+          sessionStorage.removeItem('userId');
+          sessionStorage.removeItem('userName');
+          sessionStorage.removeItem('userRole');
           
           // Redirect to login page
           window.location.href = 'login.html';
