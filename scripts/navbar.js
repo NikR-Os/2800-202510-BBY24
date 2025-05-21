@@ -62,11 +62,10 @@ function setupSidebar() {
   
   // Initialize state
   dom.sidebar.style.transition = `left ${config.animationDuration}ms ease`;
-  dom.sidebar.classList.remove('active'); //ensure it's closed initially
-
-  // Initialize overlay state
-  if (dom.overlay) {
-    dom.overlay.style.display = 'none'; // Match CSS default
+  
+  // Set initial active state based on viewport
+  if (window.innerWidth >= 992) {
+    dom.sidebar.classList.add('active');
   }
 }
 
@@ -154,30 +153,22 @@ function toggleSidebar() {
   
   const isOpening = !dom.sidebar.classList.contains('active');
   
-  // Toggle sidebar
   dom.sidebar.classList.toggle('active');
   
-  // Toggle overlay (using display to match your CSS)
-  dom.overlay.style.display = isOpening ? 'block' : 'none';
-  
-  // Handle content shifting for desktop
-  if (window.innerWidth >= 992 && dom.content) {
-    dom.content.classList.toggle('shifted', isOpening);
+  if (dom.overlay) {
+    dom.overlay.classList.toggle('active');
+    dom.overlay.style.transition = `opacity ${config.animationDuration}ms ease`;
   }
   
-  // Handle body overflow for mobile
-  if (window.innerWidth < 992) {
-    document.body.style.overflow = isOpening ? 'hidden' : '';
-  }
+  document.body.style.overflow = isOpening ? 'hidden' : '';
 }
 
 // Handle window resize
 function handleResize() {
   if (!dom.sidebar) return;
-  
-  // Close sidebar when resizing to any size
-  dom.sidebar.classList.remove('active');
-  if (dom.overlay) {
+
+  // Close overlay when resizing to desktop
+  if (window.innerWidth >= 992 && dom.overlay) {
     dom.overlay.classList.remove('active');
     document.body.style.overflow = '';
   }
@@ -201,6 +192,42 @@ function toggleSidebar() {
     dom.overlay.classList.toggle('active');
     dom.overlay.style.transition = `opacity ${config.animationDuration}ms ease`;
     document.body.style.overflow = isOpening ? 'hidden' : '';
+  }
+
+  // Logout functionality
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      const userId = sessionStorage.getItem('userId');
+      
+      try {
+        const response = await fetch('http://localhost:8000/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Clear client-side session
+          sessionStorage.clear();
+          
+          // Redirect to login page
+          window.location.href = 'login.html';
+        } else {
+          console.error('Logout failed:', data.message);
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
   }
 }
 

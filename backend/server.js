@@ -587,6 +587,39 @@ app.delete('/profile/:id', async (req, res) => {
   }
 });
 
+app.post('/logout', (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    // Clean up Socket.IO connections if needed
+    if (userId && connectedUsers[userId]) {
+      delete connectedUsers[userId];
+      console.log(`Cleaned up Socket.IO connections for user ${userId}`);
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Logout successful' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Logout failed' 
+    });
+  }
+});
+
+app.use((req, res, next) => {
+  res.status(404);
+  res.sendFile(path.join(__dirname, '../404.html'), err => {
+      if (err) {
+        res.status(404).json({ message: "404 - Not Found" });
+      }
+  });
+});
+
+
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
