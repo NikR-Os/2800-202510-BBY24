@@ -185,9 +185,24 @@ app.post('/programCreation', async (req, res) => {
     console.error("Signup error:", e);
     res.status(500).json({ message: "Server error." });
   }
+})
+
+app.get('/adminData', async (req, res) => {
+  try
+  {
+    console.log("fetching admin data");
+    const programData = await Program.find();
+    console.log("successfully fetched data" + programData);
+    res.json(programData);
+  }
+  catch(e)
+  {
+    console.log("Error fetching program data" + e);
+    res.status(500).json({message: "Failed to fetch program data"});
+  }
   
 
-})
+});
 
 //  Route: Get user document by ID
 app.get('/users/:userId', async (req, res) => {
