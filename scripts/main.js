@@ -513,6 +513,7 @@ document.getElementById("getMotivationBtn").addEventListener("click", async () =
   output.textContent = "Thinking... ✨";
 
   try {
+    console.log("[main.js] About to make fetch call");
     const response = await fetch("/api/ai/motivate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
