@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => { //Waits until the entire H
 
           sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
           sessionStorage.setItem("email", data.email);// Store the user's email in session storage for future reference.
-         console.log("[Login] Stored email in sessionStorage:", data.email);
+          console.log("[Login] Stored email in sessionStorage:", data.email);
           //sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
 
 
