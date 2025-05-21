@@ -114,10 +114,11 @@ showMap();
 // ---------------------------------------------------------------------
 // Cneters the map on the user's location with the click of a button.
 // ---------------------------------------------------------------------
-function recenterMap(map, userLocation) {
+function recenterMap(map, getLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({ center: userLocation, zoom: 15 })
-    })
+        const coords = getLocation();
+        map.flyTo({ center: coords, zoom: 15 });
+    });
 }
 
 // update the Length button's text when a dropdown item is selected.
