@@ -52,9 +52,13 @@ function showMap() {
         });
 
         // ---------------------------------------------------------------------
+        // Create an html element for the user's marker.
         // Add a marker for a user when the map loads. 
         // ---------------------------------------------------------------------
-        const userMarker = new mapboxgl.Marker({ color: "#3887be" })
+        const markerElement = document.createElement('div');
+        markerElement.className = 'user-marker';
+
+        const userMarker = new mapboxgl.Marker(markerElement)
             .setLngLat(currentUserLocation)
             .setPopup(new mapboxgl.Popup().setText("You are here"))
             .addTo(map);
