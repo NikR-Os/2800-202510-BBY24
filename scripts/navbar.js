@@ -62,10 +62,11 @@ function setupSidebar() {
   
   // Initialize state
   dom.sidebar.style.transition = `left ${config.animationDuration}ms ease`;
-  
-  // Set initial active state based on viewport
-  if (window.innerWidth >= 992) {
-    dom.sidebar.classList.add('active');
+  dom.sidebar.classList.remove('active'); //ensure it's closed initially
+
+  // Initialize overlay state
+  if (dom.overlay) {
+    dom.overlay.style.display = 'none'; // Match CSS default
   }
 }
 
@@ -153,26 +154,30 @@ function toggleSidebar() {
   
   const isOpening = !dom.sidebar.classList.contains('active');
   
+  // Toggle sidebar
   dom.sidebar.classList.toggle('active');
   
-  if (dom.overlay) {
-    dom.overlay.classList.toggle('active');
-    dom.overlay.style.transition = `opacity ${config.animationDuration}ms ease`;
+  // Toggle overlay (using display to match your CSS)
+  dom.overlay.style.display = isOpening ? 'block' : 'none';
+  
+  // Handle content shifting for desktop
+  if (window.innerWidth >= 992 && dom.content) {
+    dom.content.classList.toggle('shifted', isOpening);
   }
   
-  document.body.style.overflow = isOpening ? 'hidden' : '';
+  // Handle body overflow for mobile
+  if (window.innerWidth < 992) {
+    document.body.style.overflow = isOpening ? 'hidden' : '';
+  }
 }
 
 // Handle window resize
 function handleResize() {
   if (!dom.sidebar) return;
   
-  // Remove automatic showing on desktop
-  // The sidebar will now only show when the active class is present
-  // regardless of screen size
-  
-  // Close overlay when resizing to desktop
-  if (window.innerWidth >= 992 && dom.overlay) {
+  // Close sidebar when resizing to any size
+  dom.sidebar.classList.remove('active');
+  if (dom.overlay) {
     dom.overlay.classList.remove('active');
     document.body.style.overflow = '';
   }
