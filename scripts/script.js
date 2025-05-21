@@ -19,6 +19,7 @@ document.getElementById("student-signup-submit").addEventListener("click", async
         sessionStorage.setItem("userId", data.userId);
         sessionStorage.setItem('userRole', data.role);
         sessionStorage.setItem('userName', data.name);
+        sessionStorage.setItem('email', data.email);
         window.location.href = "main.html";
       } else {
         alert("Signup failed: " + data.message);
