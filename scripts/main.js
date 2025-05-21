@@ -536,3 +536,34 @@ document.getElementById("getMotivationBtn").addEventListener("click", async () =
 });
 
 
+//getMotivationBtn click listener ends here)
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const userId = sessionStorage.getItem("userId");
+  if (!userId) {
+    console.warn("[UX] No user ID found in sessionStorage.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/profile/${userId}`);
+    const user = await res.json();
+
+    if (user.session) {
+      console.log("[UX] Active session found for user — disabling Create Session.");
+      const createBtn = document.querySelector(".btn-sage");
+      if (createBtn) {
+        createBtn.setAttribute("aria-disabled", "true");
+        createBtn.classList.add("disabled");
+        createBtn.style.opacity = "0.8";
+createBtn.style.pointerEvents = "none"; // disables click but keeps hover and tooltip
+        createBtn.title = "You already have an active session.";
+      }
+    } else {
+      console.log("[UX] No active session — Create Session is enabled.");
+    }
+  } catch (err) {
+    console.error("[UX] Error checking user session status:", err);
+  }
+});
+
