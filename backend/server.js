@@ -13,7 +13,10 @@ const bcrypt = require("bcryptjs");                  // Import bcrypt for hashin
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
 const multer = require("multer");                  // Import multer for file uploads
 const path = require("path");                      // Import path for file paths
+const aiRoute = require("./ai");
+console.log("[server.js] AI route mounted at /api/ai");
 const app = express();  // Create Express app instance
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../')); // This is not secure...
@@ -21,6 +24,9 @@ app.use('/images', express.static(__dirname + '/../images'));
 
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
+app.use("/api/ai", aiRoute);
+
+
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
