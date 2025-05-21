@@ -34,57 +34,82 @@ function showMap() {
     //---------------------------------------------------------------------------------
     // STEP TWO:  Initialize the map
     // This function will create the map object and add the user's location to the map
-    // as a pin. It will also add an event listener for when the user clicks on the map
+    // as a marker. It will also add an event listener for when the user clicks on the map
     // to get the route from the user's location to the clicked location.
     //
-    // @params   coords:  an object with the user's location as a key-value pair
     //---------------------------------------------------------------------------------
     function initializeMap(coords) {
+        var currentUserLocation = [coords.lng, coords.lat];
+        console.log(currentUserLocation);
 
-        //---------------------------------------------------------------
-        // Convert the key value pair structure to an array of coordinates
-        //---------------------------------------------------------------
-        var userLocation = [coords.lng, coords.lat];   //user's location 
-        console.log(userLocation);
-        //----------------------
-        // Create the map "map"
-        //----------------------
         mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/-clankaplum-/cmah0v57300sl01rffo7kdydx', // Styling URL,
-            center: userLocation, // center the map at the user's location
-            //center: [-123.0019, 49.2490], // Starting position
+            style: 'mapbox://styles/-clankaplum-/cmah0v57300sl01rffo7kdydx',
+            center: currentUserLocation,
             zoom: 15,
-            projection: 'mercator' // Force Mercator projection
+            projection: 'mercator'
         });
 
-        //---------------------------------------------------------------------------------
-        // Add the user's location to the map
-        //---------------------------------------------------------------------------------
-        showPoint(map, userLocation);
+        // ---------------------------------------------------------------------
+        // Add a marker for a user when the map loads. 
+        // ---------------------------------------------------------------------
+        const userMarker = new mapboxgl.Marker({ color: "#3887be" })
+            .setLngLat(currentUserLocation)
+            .setPopup(new mapboxgl.Popup().setText("You are here"))
+            .addTo(map);
 
-        //---------------------------------------------------------------------------------
-        // Add the clicked location to the map
-        // After the click, get the route from the user's location to the clicked location
-        //---------------------------------------------------------------------------------
-        getClickedLocation(map, (clickedLocation) => {
-            getRoute(map, userLocation, clickedLocation);
-        });
+        // ---------------------------------------------------------------------
+        // Track user movement
+        // Use the geolocations "watchPosition" functionality.
+        // ---------------------------------------------------------------------
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    try {
+                        currentUserLocation = [position.coords.longitude, position.coords.latitude];
+                        console.log("User moved to:", currentUserLocation);
 
-        //---------------------------------------------------------------------------------
-        // recenters the map onto the user.
-        //---------------------------------------------------------------------------------
-        recenterMap(map, userLocation);
+                        // Defensive check to avoid crashing
+                        if (currentUserLocation.every(coord => typeof coord === 'number')) {
+                            userMarker.setLngLat(currentUserLocation);
+                            // Optional: map.flyTo({ center: updatedCoords, zoom: 15 });
+                        } else {
+                            console.warn("Invalid coordinates received:", currentUserLocation);
+                        }
+                    } catch (err) {
+                        console.error("Error during location update:", err);
+                    }
+                },
+                (err) => {
+                    console.warn("watchPosition error:", err);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 10000
+                }
+            );
+        }
 
-        //---------------------------------
-        // Add interactive pins for the sessions
-        //---------------------------------
+        // Call Recentering Functionality
+        recenterMap(map, () => currentUserLocation);
+
+        // Load the pins for the sessions
         loadSessions(map);
+
+        // Enable route drawing
+        getClickedLocation(map, (clickedLocation) => {
+            getRoute(map, currentUserLocation, clickedLocation);
+        });
     }
+
 }
 showMap();
 
+// ---------------------------------------------------------------------
+// Cneters the map on the user's location with the click of a button.
+// ---------------------------------------------------------------------
 function recenterMap(map, userLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
         map.flyTo({ center: userLocation, zoom: 15 })
@@ -193,75 +218,6 @@ function addSessionPinsLayer(map, features) {
 
     map.on('mouseleave', 'session-pins', () => {
         map.getCanvas().style.cursor = '';
-    });
-}
-
-
-// Update the initializeMap function to call loadSession
-function initializeMap(coords) {
-    var userLocation = [coords.lng, coords.lat];
-    mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: userLocation,
-        zoom: 15
-    });
-
-    // Show user's location
-    showPoint(map, userLocation);
-
-    // Add session pins to the map
-    loadSession(map);
-
-    // Add click handler for getting route
-    getClickedLocation(map, (clickedLocation) => {
-        getRoute(map, userLocation, clickedLocation);
-    });
-}
-
-// Load all of the session pin images in this function.
-function loadSessionPinImages(map, session) {
-
-}
-
-// ---------------------------------------------------------------------
-// Add a pin for point that is provided as a parameter point (lat, long)
-// when the map loads. Note map.on is an event listener. 
-//
-// @params   map:  the map object;
-//           point:  an array of [lng, lat] coordinates
-// ---------------------------------------------------------------------
-function showPoint(map, point) {
-    map.on('load', () => {
-        //a point is added via a layer
-        map.addLayer({
-            id: 'point',
-            type: 'circle',
-            source: {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: [
-                        {
-                            type: 'Feature',
-                            properties: {},
-                            geometry: {
-                                type: 'Point',
-                                coordinates: point
-                            }
-                        }
-                    ]
-                }
-            },
-            paint: {
-                'circle-radius': 10,
-                'circle-color': '#3887be',
-                'circle-stroke-width': 6,
-                'circle-stroke-color': '#7ED9CA',
-                'circle-stroke-opacity': 0.70
-            }
-        });
     });
 }
 
