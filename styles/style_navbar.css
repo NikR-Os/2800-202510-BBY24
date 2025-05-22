@@ -54,7 +54,7 @@
 }
 
 .nav-link:hover {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgb(189, 252, 206);
     transform: translateX(3px);
 }
 

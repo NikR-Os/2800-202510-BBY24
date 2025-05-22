@@ -315,68 +315,162 @@ function getClickedLocation(map, callback) {
 //           start and end:  arrays of [lng, lat] coordinates
 // -------------------------------------------------------------
 async function getRoute(map, start, end) {
-    // make a directions request using cycling profile
-    // an arbitrary start will always be the same
-    // only the end or destination will change
-    const query = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
-        { method: 'GET' }
-    );
-    const json = await query.json();
-    const data = json.routes[0];
-    const route = data.geometry.coordinates;
-    const steps = data.legs[0].steps;
-    const minutesDuration = Math.round(data.duration / 60);
+    try {
+        // Show loading state
+        const directionsPanel = document.getElementById('directions-panel');
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating route...</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('pop-menu').style.display = 'block';
 
-    const directionsPanel = document.getElementById('directions-panel');
-    directionsPanel.innerHTML = ""; // clear previous
-
-    // Estimate for travel time.
-    const timeEstimate = document.createElement("h4");
-    timeEstimate.textContent = `Estimated time: ${minutesDuration} min`;
-    directionsPanel.appendChild(timeEstimate);
-
-    // Written directions to location.
-    steps.forEach((step, index) => {
-        const instruction = document.createElement("p");
-        instruction.textContent = `${index + 1}. ${step.maneuver.instruction}`;
-        directionsPanel.appendChild(instruction);
-    });
-
-    console.log("route is " + route);
-    const geojson = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-            type: 'LineString',
-            coordinates: route
+        // Make directions request using walking profile
+        const query = await fetch(
+            `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+            { method: 'GET' }
+        );
+        
+        if (!query.ok) {
+            throw new Error('Failed to fetch directions');
         }
+
+        const json = await query.json();
+        const data = json.routes[0];
+        const route = data.geometry.coordinates;
+        const steps = data.legs[0].steps;
+        const minutesDuration = Math.round(data.duration / 60);
+        const distance = (data.distance / 1000).toFixed(1); // Convert to km
+
+        // Update directions panel
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <i class="fas fa-clock text-success me-2"></i>
+                        <span>${minutesDuration} min</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-route text-success me-2"></i>
+                        <span>${distance} km</span>
+                    </div>
+                </div>
+                <div class="steps-list">
+                    ${steps.map((step, index) => `
+                        <div class="step">
+                            <div class="step-icon">
+                                ${getStepIcon(step.maneuver.type, step.maneuver.modifier)}
+                            </div>
+                            <div class="step-text">
+                                <div>${step.maneuver.instruction}</div>
+                                <div class="step-distance">${(step.distance / 1000).toFixed(1)} km</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="action-btn primary" onclick="document.getElementById('pop-menu').style.display='none'">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        `;
+
+        // Draw route on map
+        const geojson = {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+                type: 'LineString',
+                coordinates: route
+            }
+        };
+
+        if (map.getSource('route')) {
+            map.getSource('route').setData(geojson);
+        } else {
+            map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: {
+                    type: 'geojson',
+                    data: geojson
+                },
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#4a8c5e',
+                    'line-width': 4,
+                    'line-opacity': 0.8
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Error getting directions:', error);
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Failed to get directions. Please try again.
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="action-btn primary" onclick="document.getElementById('pop-menu').style.display='none'">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Helper function to get appropriate icon for each step
+function getStepIcon(type, modifier) {
+    const icons = {
+        'turn': {
+            'left': 'fa-arrow-turn-left',
+            'right': 'fa-arrow-turn-right',
+            'sharp left': 'fa-arrow-turn-down-left',
+            'sharp right': 'fa-arrow-turn-down-right',
+            'slight left': 'fa-arrow-turn-left',
+            'slight right': 'fa-arrow-turn-right',
+            'uturn': 'fa-arrow-rotate-left',
+            'default': 'fa-arrow-right'
+        },
+        'depart': 'fa-location-dot',
+        'arrive': 'fa-flag-checkered',
+        'continue': 'fa-arrow-right',
+        'roundabout': 'fa-arrow-rotate-right',
+        'rotary': 'fa-arrows-rotate',
+        'fork': 'fa-code-fork',
+        'merge': 'fa-arrow-right-arrow-left',
+        'default': 'fa-arrow-right'
     };
 
-    // if the route already exists on the map, we'll reset it using setData
-    if (map.getSource('route')) {
-        map.getSource('route').setData(geojson);
+    if (type === 'turn') {
+        return `<i class="fas ${icons.turn[modifier] || icons.turn.default}"></i>`;
     }
-    // otherwise, we'll make a new request
-    else {
-        map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: {
-                type: 'geojson',
-                data: geojson
-            },
-            layout: {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            paint: {
-                'line-color': '#00FF00',
-                'line-width': 5,
-                'line-opacity': 0.75
-            }
-        });
-    }
+    return `<i class="fas ${icons[type] || icons.default}"></i>`;
 }
 
 /**
@@ -549,4 +643,43 @@ createBtn.style.pointerEvents = "none"; // disables click but keeps hover and to
     console.error("[UX] Error checking user session status:", err);
   }
 });
+
+// create a sparkles effect on button click
+document.getElementById('toggleMotivationBarBtn').addEventListener('click', function(e) {
+    createSparkles(e.clientX, e.clientY);
+});
+
+function createSparkles(x, y) {
+    for (let i = 0; i < 20; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+        
+        // Use colors for sparkles
+        const colors = ['#e0f7e5', '#a7f2b3', '#c8f5d0'];
+        sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        document.body.appendChild(sparkle);
+        
+        // Random movement
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 2 + Math.random() * 3;
+        let posX = x;
+        let posY = y;
+        
+        const animate = () => {
+            posX += Math.cos(angle) * velocity;
+            posY += Math.sin(angle) * velocity;
+            sparkle.style.left = `${posX}px`;
+            sparkle.style.top = `${posY}px`;
+        };
+        
+        let interval = setInterval(animate, 16);
+        setTimeout(() => {
+            clearInterval(interval);
+            sparkle.remove();
+        }, 1000);
+    }
+}
 
