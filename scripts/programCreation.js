@@ -1,5 +1,27 @@
 const courses = [];
 
+function checkAuth() {
+    const userId = sessionStorage.getItem('userId');
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    // List of protected pages that require login
+    const protectedPages = ['main.html', 'adminMain.html', 'programCreation.html', 'profile.html', 'setting.html'];
+    
+    if (protectedPages.includes(currentPage) && !userId) {
+        // Redirect to index.html if not logged in
+        window.location.href = 'index.html';
+        return false;
+    }
+    
+    return true;
+}
+
+// Run the check before anything else
+if (!checkAuth()) {
+    // Stop execution if not authenticated
+    throw new Error("Unauthorized access - redirecting to login");
+}
+
 function generateRandomCode(length) 
 {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
