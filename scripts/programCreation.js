@@ -20,6 +20,7 @@ function addingCourses()
     if(course.toLowerCase() == courses[i].toLowerCase())
     {
       exists = true;
+      alert("Course already inputted");
       console.log(exists);
     }
   }
@@ -27,9 +28,7 @@ function addingCourses()
   if(!exists)
   {
     const container = document.getElementById("courses");
-    const firstLetter = course.toUpperCase().substring(0,1);
-    const bodyName = course.toLowerCase().substring(1);
-    const courseName = firstLetter + bodyName;
+    const courseName = course.toUpperCase();
     console.log(courseName);
     const content = `
     <div>
@@ -40,6 +39,7 @@ function addingCourses()
     container.insertAdjacentHTML("beforeend", content);
   }  
   
+  document.getElementById("course").value = "";
   console.log(courses);
 }
 
@@ -54,12 +54,13 @@ document.getElementById("submitProgram").addEventListener("click", async () => {
   const name = document.getElementById("programName").value;
   const length = document.getElementById("programLength").value;
   const code = document.getElementById("codeOutput").value;
+  const subject = document.getElementById("subject").value;
 
   try {
     const res = await fetch(`${baseUrl}/programCreation`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, length, courses, code })
+      body: JSON.stringify({ name, length, courses, code, subject })
     });
     const data = await res.json();
     if(res.ok)

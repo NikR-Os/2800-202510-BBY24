@@ -145,9 +145,9 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/programCreation', async (req, res) => {
-  const { name, length, courses, code } = req.body;
+  const { name, length, courses, code, subject } = req.body;
 
-  if (!name || !length || !courses || !code) {
+  if (!name || !length || !courses || !code || !subject) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -174,7 +174,8 @@ app.post('/programCreation', async (req, res) => {
       courses: courses,
       numberOfStudents: 0,
       accessCode: code,
-      length: length
+      length: length,
+      subject: subject
     });
 
     await newProgram.save();
