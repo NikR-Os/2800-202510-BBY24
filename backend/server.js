@@ -614,7 +614,7 @@ app.post('/programs/increment', async (req, res) => {
   }
 });
 
-app.post('/logout', (req, res) => {
+app.post('/api/logout', (req, res) => {
   try {
     const { userId } = req.body;
     console.log("Logout request for user:", userId);

@@ -122,9 +122,10 @@
 /* Desktop styles */
 @media (min-width: 992px) {
     #sidebar {
+        left: 0 !important;
         top: 56px;
         height: calc(100vh - 56px);
-        transform: translateX(-100%); /* Start hidden on desktop too */
+        /* transform: translateX(-100%); Start hidden on desktop too */
     }
 
     #sidebar.active {

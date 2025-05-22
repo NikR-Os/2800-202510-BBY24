@@ -74,14 +74,12 @@ function cacheDomElements() {
 // Sidebar toggle functionality
 function setupSidebar() {
   if (!dom.sidebar) return;
+
+  dom.sidebar.classList.remove('active');
   
   // Initialize state
   dom.sidebar.style.transition = `left ${config.animationDuration}ms ease`;
   
-  // Set initial active state based on viewport
-  if (window.innerWidth >= 992) {
-    dom.sidebar.classList.add('active');
-  }
 }
 
 // Event listeners setup
@@ -110,7 +108,42 @@ function setupEventListeners() {
         !e.target.closest('#sidebarToggle')) {
       toggleSidebar();
     }
-  });
+  })
+
+  // Logout functionality
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      const userId = sessionStorage.getItem('userId');
+      
+      try {
+        const response = await fetch('/api/logout', {  // Changed to /api/logout
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Clear client-side session
+          sessionStorage.clear();
+          // Redirect to login page
+          window.location.href = 'login.html';
+        } else {
+          console.error('Logout failed:', data.message);
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
+  }
 
   // Handle navigation link clicks
 document.addEventListener('click', function(e) {
@@ -186,66 +219,6 @@ function handleResize() {
   if (window.innerWidth >= 992 && dom.overlay) {
     dom.overlay.classList.remove('active');
     document.body.style.overflow = '';
-  }
-}
-
-// Toggle sidebar visibility to handle content shifting
-function toggleSidebar() {
-  if (!dom.sidebar || !dom.overlay) return;
-  
-  const isOpening = !dom.sidebar.classList.contains('active');
-  
-  dom.sidebar.classList.toggle('active');
-  
-  // Toggle content shifting for desktop
-  if (window.innerWidth >= 992) {
-    document.getElementById('content').classList.toggle('shifted', isOpening);
-  }
-  
-  // Overlay only for mobile
-  if (window.innerWidth < 992) {
-    dom.overlay.classList.toggle('active');
-    dom.overlay.style.transition = `opacity ${config.animationDuration}ms ease`;
-    document.body.style.overflow = isOpening ? 'hidden' : '';
-  }
-
-  // Logout functionality
-  const logoutButton = document.getElementById('logoutButton');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', async (e) => {
-      e.preventDefault();
-      
-      const userId = sessionStorage.getItem('userId');
-      
-      try {
-        const response = await fetch('http://localhost:8000/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-          // Clear client-side session
-          sessionStorage.clear();
-          sessionStorage.removeItem('userId');
-          sessionStorage.removeItem('userName');
-          sessionStorage.removeItem('userRole');
-          
-          // Redirect to login page
-          window.location.href = 'login.html';
-        } else {
-          console.error('Logout failed:', data.message);
-          alert('Logout failed. Please try again.');
-        }
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('An error occurred during logout.');
-      }
-    });
   }
 }
 
