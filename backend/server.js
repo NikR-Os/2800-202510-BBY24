@@ -5,9 +5,8 @@ const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");
 const Student = require('./models/Student');        // Import Mongoose for MongoDB (student schema)
 const User = require('./models/User');         // Import Mongoose for MongoDB (student schema)
-console.log("User model loaded:", typeof Student === 'function');
 const Admin = require('./models/Admin');             // Import Mongoose for MongoDB (admin schema)
-console.log("User model loaded:", typeof Admin === 'function');
+const Program = require('./models/Program');         //Import Mongoose for MongoDB (program schema)
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
@@ -145,6 +144,67 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.post('/programCreation', async (req, res) => {
+  const { name, length, courses, code } = req.body;
+
+  if (!name || !length || !courses || !code) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  try
+  {
+    const existingProgram = await Program.findOne({ name });
+    if (existingProgram) 
+    {
+      return res.status(409).json({ message: "Program already exists: " + existingProgram });
+    }
+
+    for(let i = 0; i < courses.length; i++)
+    {
+      const course = courses[i];
+      const existingCourse = await Program.findOne({ course });
+      if(existingCourse)
+      {
+        return res.status(409).json({ message: "Course already exists: " + course })
+      }
+    }
+    
+    const newProgram = new Program({
+      name: name,
+      courses: courses,
+      numberOfStudents: 0,
+      accessCode: code,
+      length: length
+    });
+
+    await newProgram.save();
+    console.log("Program Creation Successful");
+    res.status(200).json({ message: "Creation successful"});
+  }
+  catch (e) 
+  {
+    console.error("Signup error:", e);
+    res.status(500).json({ message: "Server error." });
+  }
+})
+
+app.get('/adminData', async (req, res) => {
+  try
+  {
+    console.log("fetching admin data");
+    const programData = await Program.find();
+    console.log("successfully fetched data" + programData);
+    res.json(programData);
+  }
+  catch(e)
+  {
+    console.log("Error fetching program data" + e);
+    res.status(500).json({message: "Failed to fetch program data"});
+  }
+  
+
+});
+
 //  Route: Get user document by ID
 app.get('/users/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -185,10 +245,6 @@ app.get('/users/:userId', async (req, res) => {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error." });
   }
-});
-
-app.post('/programCreation', async (req, res) => {
-  
 });
 
 //  Route: Get user document by ID
@@ -463,7 +519,7 @@ app.put('/profile/admin/:id', async (req, res) => {
   }
 });
 
-const Program = require('./models/Program'); // ⬅️ If not already present
+// const Program = require('./models/Program'); // ⬅️ If not already present
 
 app.get('/programs/:code', async (req, res) => {
   try {
