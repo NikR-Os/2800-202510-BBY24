@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + '/../.env' });
 const http = require("http");
 const { Server } = require("socket.io");
 const express = require("express");                  // Import Express framework
@@ -467,7 +467,7 @@ const Program = require('./models/Program'); // ⬅️ If not already present
 
 app.get('/programs/:code', async (req, res) => {
   try {
-    const program = await Program.findOne({ code: req.params.code });
+    const program = await Program.findOne({ accessCode: req.params.code }); // <- FIXED
     if (!program) return res.status(404).json({ message: "Program not found." });
     res.json(program);
   } catch (err) {
@@ -574,6 +574,33 @@ app.delete('/profile/:id', async (req, res) => {
       message: 'Server error during profile deletion',
       error: error.message 
     });
+  }
+});
+
+//Update program document ROUTE
+app.post('/programs/increment', async (req, res) => {
+  const { programName } = req.body;
+
+  if (!programName) {
+    return res.status(400).json({ message: "Program name is required." });
+  }
+
+  try {
+    const updatedProgram = await Program.findOneAndUpdate(
+      { name: programName },
+      { $inc: { numberOfStudents: 1 } },
+      { new: true }
+    );
+
+    if (!updatedProgram) {
+      return res.status(404).json({ message: "Program not found." });
+    }
+
+    console.log("[Program] numberOfStudents incremented for:", updatedProgram.name);
+    res.json(updatedProgram);
+  } catch (error) {
+    console.error("Error incrementing program count:", error);
+    res.status(500).json({ message: "Server error." });
   }
 });
 
