@@ -11,6 +11,7 @@ const navbar = document.getElementById('navbar');
 let currentFontSize = 100;
 let currentTheme = 'normal-mode';
 
+// change styles to dark mode
 function darkModeOn() {
     navbar.classList.remove('bg-body-tertiary');
     navbar.classList.add('navbar-dark');
@@ -20,6 +21,8 @@ function darkModeOn() {
     dropdown.classList.remove('light');
     dropdown.classList.add('dark');
 }
+
+// change styles to standard mode
 function darkModeOff() {
     navbar.classList.remove('navbar-dark');
     navbar.classList.add('bg-body-tertiary');
@@ -47,6 +50,7 @@ function applyFontSize() {
     userSchema.fontSize = `${currentFontSize}%`;
 }
 
+// Increase Font button function 
 increaseFontToggleBtn.addEventListener('click', () => {
     if (currentFontSize < 200) {
         currentFontSize += 10;
@@ -54,47 +58,10 @@ increaseFontToggleBtn.addEventListener('click', () => {
     }
 });
 
+// Decease Font button function
 deceaseFontToggleBtn.addEventListener('click', () => {
     if (currentFontSize > 50) {
         currentFontSize -= 10;
         applyFontSize();
     }
 });
-
-// dropdown menu
-dropdownItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    dropdownItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-
-    const mode = item.getAttribute('data-mode');
-
-    bodyElement.classList.remove('protanopia', 'tritanopia', 'deuteranopia', 'normal-mode');
-    navbar.classList.remove('protanopia', 'tritanopia', 'deuteranopia', 'normal-mode');
-    switch (mode) {
-    case 'protanopia':
-        bodyElement.classList.add('protanopia');
-        navbar.classList.add('protanopia');
-        navbar.classList.remove('bg-body-tertiary');
-        break;
-    case 'tritanopia':
-        bodyElement.classList.add('tritanopia');
-        navbar.classList.add('tritanopia')
-        navbar.classList.remove('bg-body-tertiary');
-        break;
-    case 'deuteranopia':
-        bodyElement.classList.add('deuteranopia');
-        navbar.classList.add('deuteranopia')
-        navbar.classList.remove('bg-body-tertiary');
-        break;
-    case 'true':
-    default:
-        bodyElement.classList.add('normal-mode');
-        break;
-    }
-    });
-  });
-
-app.get()
