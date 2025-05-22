@@ -1,0 +1,8 @@
+.user-marker {
+  width: 20px;
+  height: 20px;
+  background-color: #3887be;
+  border: 4px solid #7ED9CA;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
