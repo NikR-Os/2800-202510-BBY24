@@ -179,6 +179,7 @@ app.post('/programCreation', async (req, res) => {
 
     await newProgram.save();
     console.log("Program Creation Successful");
+    res.status(200).json({ message: "Creation successful"});
   }
   catch (e) 
   {

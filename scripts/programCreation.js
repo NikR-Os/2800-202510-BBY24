@@ -59,17 +59,19 @@ document.getElementById("submitProgram").addEventListener("click", async () => {
     const res = await fetch(`${baseUrl}/programCreation`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, length, courses, code,})
+      body: JSON.stringify({ name, length, courses, code })
     });
     const data = await res.json();
     if(res.ok)
     {
       alert("Program Creation Successful");
-      window.location.assign("adminMain.html");
+      console.log("Program success");
+      window.location.href = "adminMain.html";
     }
     else
     {
       alert("Program Creation failed " + data.message);
+      console.log("Program failure");
     }
   }
   catch(e)
