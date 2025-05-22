@@ -131,7 +131,8 @@ function updateLength(length) {
 // Fetch all sessions and populate the map
 async function loadSessions(map) {
     try {
-        const response = await fetch('http://localhost:8000/sessions');
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/sessions`);
         if (!response.ok) {
             console.error("Failed to load session data:", response.statusText);
             return;
