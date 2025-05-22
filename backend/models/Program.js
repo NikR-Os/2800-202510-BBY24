@@ -19,6 +19,14 @@ const programSchema = new mongoose.Schema({
     required: true
   }],
 
+  subject:
+  {
+    type: String,
+    enum: ["math", "writing", "business", "computer", "art", "trades", "default"],
+    default: 'default',
+    required: true
+  },
+
   // Estimated number of students expected to join
   numberOfStudents: {
     type: Number,
