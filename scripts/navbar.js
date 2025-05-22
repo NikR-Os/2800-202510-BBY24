@@ -14,6 +14,18 @@ const dom = {
   toggle: null
 };
 
+// update the username in the navbar
+function updateNavbarUserInfo() {
+  // get elements
+  const usernameDisplay = document.getElementById('usernameDisplay');
+  const userRoleDisplay = document.getElementById('userRoleDisplay');
+  
+  if (usernameDisplay && userRoleDisplay) {
+    usernameDisplay.textContent = sessionStorage.getItem('userName') || 'Guest';
+    userRoleDisplay.textContent = sessionStorage.getItem('userRole') || 'Visitor';
+  }
+}
+
 // Main initialization function
 async function initNavbar() {
   // dynamic loading 
@@ -28,6 +40,9 @@ async function initNavbar() {
   
   // Handle initial responsive state
   handleResize();
+
+   updateNavbarUserInfo(); // Just update the username and role in the navbar
+
 }
 
 // Dynamic navbar loader
@@ -166,11 +181,7 @@ function toggleSidebar() {
 // Handle window resize
 function handleResize() {
   if (!dom.sidebar) return;
-  
-  // Remove automatic showing on desktop
-  // The sidebar will now only show when the active class is present
-  // regardless of screen size
-  
+
   // Close overlay when resizing to desktop
   if (window.innerWidth >= 992 && dom.overlay) {
     dom.overlay.classList.remove('active');
@@ -196,6 +207,45 @@ function toggleSidebar() {
     dom.overlay.classList.toggle('active');
     dom.overlay.style.transition = `opacity ${config.animationDuration}ms ease`;
     document.body.style.overflow = isOpening ? 'hidden' : '';
+  }
+
+  // Logout functionality
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      const userId = sessionStorage.getItem('userId');
+      
+      try {
+        const response = await fetch('http://localhost:8000/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Clear client-side session
+          sessionStorage.clear();
+          sessionStorage.removeItem('userId');
+          sessionStorage.removeItem('userName');
+          sessionStorage.removeItem('userRole');
+          
+          // Redirect to login page
+          window.location.href = 'login.html';
+        } else {
+          console.error('Logout failed:', data.message);
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
   }
 }
 

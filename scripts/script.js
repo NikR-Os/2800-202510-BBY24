@@ -95,15 +95,15 @@ document.addEventListener("DOMContentLoaded", () => { //Waits until the entire H
 
           sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
           sessionStorage.setItem("email", data.email);// Store the user's email in session storage for future reference.
-          console.log("[Login] Stored email in sessionStorage:", data.email);
-          //sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
+         console.log("[Login] Stored email in sessionStorage:", data.email);
+          sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
 
 
           sessionStorage.setItem("userRole", data.role); // store user role 
           sessionStorage.setItem("programName", data.program); 
           console.log("[Login] Program name set in sessionStorage:", data.program);
           sessionStorage.setItem("name", data.name);
-          //sessionStorage.setItem("userName", data.name);
+          sessionStorage.setItem("userName", data.name);
 
 
           sessionStorage.setItem("courses", JSON.stringify(data.courses));

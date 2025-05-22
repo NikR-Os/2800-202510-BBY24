@@ -507,30 +507,40 @@ app.post('/profile/:id/image', upload.single('image'), async (req, res) => {
   }
 });
 
+
 // Get profile image
 app.get('/profile/:id/image', async (req, res) => {
-  const { id } = req.params;
-
   try {
-    // Check student first
-    const student = await Student.findById(id);
-    if (student && student.image) {
-      res.set('Content-Type', student.image.contentType);
-      return res.send(student.image.data);
+    // Check student
+    const student = await Student.findById(req.params.id).lean();
+    if (student?.image?.data) {
+      return res
+        .set('Content-Type', student.image.contentType)
+        .send(student.image.data);
     }
 
-    // Then check admin
-    const admin = await Admin.findById(id);
-    if (admin && admin.image) {
-      res.set('Content-Type', admin.image.contentType);
-      return res.send(admin.image.data);
+    // Check admin
+    const admin = await Admin.findById(req.params.id).lean();
+    if (admin?.image?.data) {
+      return res
+        .set('Content-Type', admin.image.contentType)
+        .send(admin.image.data);
     }
 
-    // Return default image if no image found
-    const defaultImagePath = path.join(__dirname,  'images', 'default.avif');
-    return res.sendFile(defaultImagePath);
+    // Serve default image
+    const defaultImagePath = path.resolve(__dirname, '../images/default.avif');
+    
+    if (!fs.existsSync(defaultImagePath)) {
+      return res.status(404).send("Default image not found");
+    }
+
+    return res.sendFile(defaultImagePath, {
+      headers: { 'Content-Type': 'image/avif' }
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Profile image error:", error);
+    return res.status(500).send("Server error");
   }
 });
 
@@ -603,6 +613,40 @@ app.post('/programs/increment', async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
+
+app.post('/logout', (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log("Logout request for user:", userId);
+    
+    // Clean up Socket.IO connections if needed
+    if (userId && connectedUsers[userId]) {
+      delete connectedUsers[userId];
+      console.log(`Cleaned up Socket.IO connections for user ${userId}`);
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Logout successful' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Logout failed' 
+    });
+  }
+});
+
+app.use((req, res, next) => {
+  res.status(404);
+  res.sendFile(path.join(__dirname, '../404.html'), err => {
+      if (err) {
+        res.status(404).json({ message: "404 - Not Found" });
+      }
+  });
+});
+
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
