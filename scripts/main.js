@@ -335,22 +335,20 @@ async function getRoute(map, start, end) {
         
         document.getElementById('pop-menu').style.display = 'block';
 
-        // Make directions request using walking profile
+        // Make directions request
         const query = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             { method: 'GET' }
         );
         
-        if (!query.ok) {
-            throw new Error('Failed to fetch directions');
-        }
+        if (!query.ok) throw new Error('Failed to fetch directions');
 
         const json = await query.json();
         const data = json.routes[0];
         const route = data.geometry.coordinates;
         const steps = data.legs[0].steps;
         const minutesDuration = Math.round(data.duration / 60);
-        const distance = (data.distance / 1000).toFixed(1); // Convert to km
+        const distance = (data.distance / 1000).toFixed(1);
 
         // Update directions panel
         directionsPanel.innerHTML = `
@@ -359,12 +357,12 @@ async function getRoute(map, start, end) {
                 <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
+                <div class="route-summary d-flex justify-content-between align-items-center mb-3">
+                    <div class="route-time">
                         <i class="fas fa-clock text-success me-2"></i>
                         <span>${minutesDuration} min</span>
                     </div>
-                    <div>
+                    <div class="route-distance">
                         <i class="fas fa-route text-success me-2"></i>
                         <span>${distance} km</span>
                     </div>
@@ -376,7 +374,7 @@ async function getRoute(map, start, end) {
                                 ${getStepIcon(step.maneuver.type, step.maneuver.modifier)}
                             </div>
                             <div class="step-text">
-                                <div>${step.maneuver.instruction}</div>
+                                <div class="step-instruction">${step.maneuver.instruction}</div>
                                 <div class="step-distance">${(step.distance / 1000).toFixed(1)} km</div>
                             </div>
                         </div>
@@ -384,7 +382,7 @@ async function getRoute(map, start, end) {
                 </div>
             </div>
             <div class="card-footer">
-                <button class="action-btn primary" onclick="document.getElementById('pop-menu').style.display='none'">
+                <button class="btn btn-primary w-100" style="background-color: #4a8c5e" onclick="document.getElementById('pop-menu').style.display='none'">
                     <i class="fas fa-times me-2"></i>Close
                 </button>
             </div>
@@ -436,7 +434,7 @@ async function getRoute(map, start, end) {
                 </div>
             </div>
             <div class="card-footer">
-                <button class="action-btn primary" onclick="document.getElementById('pop-menu').style.display='none'">
+                <button class="btn btn-primary w-100" onclick="document.getElementById('pop-menu').style.display='none'">
                     <i class="fas fa-times me-2"></i>Close
                 </button>
             </div>
@@ -444,26 +442,27 @@ async function getRoute(map, start, end) {
     }
 }
 
-// Helper function to get appropriate icon for each step
+// Updated icon mapping with proper Font Awesome classes
 function getStepIcon(type, modifier) {
     const icons = {
         'turn': {
-            'left': 'fa-arrow-turn-left',
-            'right': 'fa-arrow-turn-right',
-            'sharp left': 'fa-arrow-turn-down-left',
-            'sharp right': 'fa-arrow-turn-down-right',
-            'slight left': 'fa-arrow-turn-left',
-            'slight right': 'fa-arrow-turn-right',
+            'left': 'fa-arrow-left',
+            'right': 'fa-arrow-right',
+            'sharp left': 'fa-arrow-left-long',
+            'sharp right': 'fa-arrow-right-long',
+            'slight left': 'fa-arrow-left',
+            'slight right': 'fa-arrow-right',
             'uturn': 'fa-arrow-rotate-left',
             'default': 'fa-arrow-right'
         },
         'depart': 'fa-location-dot',
         'arrive': 'fa-flag-checkered',
         'continue': 'fa-arrow-right',
-        'roundabout': 'fa-arrow-rotate-right',
+        'roundabout': 'fa-rotate-right',
         'rotary': 'fa-arrows-rotate',
         'fork': 'fa-code-fork',
         'merge': 'fa-arrow-right-arrow-left',
+        'new name': 'fa-signature',
         'default': 'fa-arrow-right'
     };
 
