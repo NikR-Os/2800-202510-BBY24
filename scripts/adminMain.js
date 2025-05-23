@@ -1,3 +1,8 @@
+/**
+ * Checks if the page is one of the protected pages. If it is a protected page, then
+ * it checks if the users has a cookie. If the user doesn't have a cookie, then the
+ * user is redirected to the login page.
+ */
 function checkAuth() {
     const userId = sessionStorage.getItem('userId');
     const currentPage = window.location.pathname.split('/').pop();
@@ -10,7 +15,6 @@ function checkAuth() {
         window.location.href = 'index.html';
         return false;
     }
-    
     return true;
 }
 
@@ -20,6 +24,10 @@ if (!checkAuth()) {
     throw new Error("Unauthorized access - redirecting to login");
 }
 
+/**
+ * Fetches data from the server side and creating cards for each program in
+ * the database. 
+ */
 fetch('/adminData')
 .then(res => res.json())
 .then(result => {
