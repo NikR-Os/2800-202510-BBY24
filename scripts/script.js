@@ -2,12 +2,13 @@
 document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
   e.preventDefault();
 
+  const baseUrl = window.location.origin;
   const name = document.getElementById("student-signup-name").value;
   const email = document.getElementById("student-signup-email").value;
   const password = document.getElementById("student-signup-password").value;
 
   try {
-    const res = await fetch("http://localhost:8000/signup?type=student", {
+    const res = await fetch(`${baseUrl}/signup?type=student`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
@@ -36,12 +37,13 @@ document.getElementById("student-signup-submit").addEventListener("click", async
 document.getElementById("admin-signup-submit").addEventListener("click", async (e) => {
   e.preventDefault();
 
+  const baseUrl = window.location.origin;
   const name = document.getElementById("admin-signup-name").value;
   const email = document.getElementById("admin-signup-email").value;
   const password = document.getElementById("admin-signup-password").value;
 
   try {
-    const res = await fetch("http://localhost:8000/signup?type=admin", {
+    const res = await fetch(`${baseUrl}/signup?type=admin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
