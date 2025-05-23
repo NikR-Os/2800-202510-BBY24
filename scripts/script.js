@@ -1,46 +1,79 @@
-// Handle the sign up for students
-document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
-  e.preventDefault();
+/**
+ * Handles the student sign up through a student sign up button. After clicking the button
+ * the values of name, email and password are taken from page and sent to the server side.
+ * If the server side was successful, the values taken are used to creation a student cookie.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const studentBtn = document.getElementById("student-signup-submit");
 
+  if (studentBtn) {
+    studentBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      // The website's orginal url
+  const baseUrl = window.location.origin;
+
+  // Grabbing values from the page
   const name = document.getElementById("student-signup-name").value;
   const email = document.getElementById("student-signup-email").value;
   const password = document.getElementById("student-signup-password").value;
 
   try {
-    const res = await fetch("http://localhost:8000/signup?type=student", {
+    // Sending the values to the server side
+    const res = await fetch(`${baseUrl}/signup?type=student`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
     const data = await res.json();
 
+      // Checking if the server side was successful
       if (res.ok) {
+        // Informing the user that the sign up was successful
         alert("Signup successful. Logging you in...");
+        // Creating a cookie for the user
         sessionStorage.setItem("userId", data.userId);
         sessionStorage.setItem('userRole', data.role);
         sessionStorage.setItem('userName', data.name);
+        sessionStorage.setItem('email', data.email);
+        // Redirecting the user to the main page
         window.location.href = "main.html";
       } else {
+        // Informing the user that the sign up was a failure
         alert("Signup failed: " + data.message);
       }
   } catch (err) {
+    // Informing the user if there are any errors when sending data to the server
     console.error("Signup error:", err);
     alert("Something went wrong during signup.");
   }
-});
+    }); //  closes studentBtn.addEventListener
+  } //  closes if (studentBtn)
+}); //  closes DOMContentLoaded
 
+/**
+ * Handles the admin sign up through a admin sign up button. After clicking the button
+ * the values of name, email and password are taken from page and sent to the server side.
+ * If the server side was successful, the values taken are used to creation an admin cookie.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const adminBtn = document.getElementById("admin-signup-submit");
 
+  if (adminBtn) {
+    adminBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
 
-// Handles the sign up for admins 
-document.getElementById("admin-signup-submit").addEventListener("click", async (e) => {
-  e.preventDefault();
+      // The website's orginal url
+  const baseUrl = window.location.origin;
 
+  // Grabbing values from the page
   const name = document.getElementById("admin-signup-name").value;
   const email = document.getElementById("admin-signup-email").value;
   const password = document.getElementById("admin-signup-password").value;
 
   try {
-    const res = await fetch("http://localhost:8000/signup?type=admin", {
+    // Sending the values to the server side
+    const res = await fetch(`${baseUrl}/signup?type=admin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
@@ -48,22 +81,29 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
 
     const data = await res.json();
 
+    // Checking if the server side was successful
     if (res.ok) {
+      // Informing the user that the sign up was successful
       alert("Signup successful. Logging you in...");
       // Optionally auto-login after signup
+      // Creating a cookie for the user
       sessionStorage.setItem("userId", data.userId);
       sessionStorage.setItem('userRole', data.role);
       sessionStorage.setItem('userName', data.name);
+      // Redirecting the user to the admin main page
       window.location.href = "adminMain.html";
     } else {
+      // Informing the user that the sign up was a failure
       alert("Signup failed: " + data.message);
     }
   } catch (err) {
+    // Informing the user if there are any errors when sending data to the server
     console.error("Signup error:", err);
     alert("Something went wrong during signup.");
   }
+    });
+  }
 });
-
 
 // Handle login
 document.addEventListener("DOMContentLoaded", () => { //Waits until the entire HTML is fully loaded before running the code.
@@ -96,14 +136,14 @@ document.addEventListener("DOMContentLoaded", () => { //Waits until the entire H
           sessionStorage.setItem("userId", data.userId); // Save the returned user ID to session storage for later use in the app.
           sessionStorage.setItem("email", data.email);// Store the user's email in session storage for future reference.
          console.log("[Login] Stored email in sessionStorage:", data.email);
-          //sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
+          sessionStorage.setItem("userEmail", email); // Store the user's email in session storage for future reference.
 
 
           sessionStorage.setItem("userRole", data.role); // store user role 
           sessionStorage.setItem("programName", data.program); 
           console.log("[Login] Program name set in sessionStorage:", data.program);
           sessionStorage.setItem("name", data.name);
-          //sessionStorage.setItem("userName", data.name);
+          sessionStorage.setItem("userName", data.name);
 
 
           sessionStorage.setItem("courses", JSON.stringify(data.courses));

@@ -1,0 +1,184 @@
+.admin-body {
+    background: linear-gradient(135deg, #f5faf5 0%, #e0f5e4 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    padding-bottom: 60px;
+}
+
+.program-creation-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.program-creation-title {
+    color: #2c5e3f;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.program-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(74, 140, 94, 0.1);
+}
+
+.card-title {
+    color: #2c5e3f;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1e7dd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: #4a8c5e;
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(74, 140, 94, 0.25);
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1e7dd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    background-color: white;
+    color: #333;
+}
+
+.courses-list {
+    margin-bottom: 1rem;
+    min-height: 50px;
+    border: 1px dashed #d1e7dd;
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.course-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.add-button, .generate-button {
+    background-color: #4a8c5e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.add-button:hover, .generate-button:hover {
+    background-color: #3a6d4a;
+    transform: translateY(-2px);
+}
+
+.code-generator {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.submit-button {
+    background-color: #4a8c5e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.submit-button:hover {
+    background-color: #3a6d4a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Back Button Styles */
+#back-btn {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    color: #198754;
+    border: 1px solid #198754;
+    border-radius: 4px;
+    padding: 0.5em 1.2em;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin-bottom: 1em;
+}
+#back-btn:hover {
+    background-color: #198754;
+    color: #fff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .program-creation-container {
+        padding: 1rem;
+        margin-top: 3rem;
+    }
+    
+    .program-creation-title {
+        font-size: 1.6rem;
+    }
+    
+    .course-input-group, .code-generator {
+        flex-direction: column;
+    }
+    
+    .add-button, .generate-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .program-creation-title {
+        font-size: 1.4rem;
+    }
+    
+    .program-card {
+        padding: 1rem;
+    }
+    
+    .btn-back {
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .program-creation-title {
+        margin-top: 40px;
+    }
+
+    #back-btn { 
+        margin-top: 40px;
+    }
+}

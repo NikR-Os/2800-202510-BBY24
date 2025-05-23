@@ -42,15 +42,6 @@
         </a>
       </li>
       <li class="nav-item">
-        <a href="/chat" class="nav-link" data-link="chat">
-          <i class="fas fa-comment-dots"></i>
-          Chat
-          <span class="badge bg-danger float-end mt-1" id="unreadMessagesBadge"
-            >0</span
-          >
-        </a>
-      </li>
-      <li class="nav-item">
         <a href="/profile" class="nav-link" data-link="profile">
           <i class="fas fa-user"></i>
           Profile
@@ -68,23 +59,14 @@
   <!-- Sidebar Footer -->
   <div class="sidebar-footer p-3 border-top">
     <div class="d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center">
-        <img
-          src="/images/elmo.jpg"
-          alt="User"
-          class="rounded-circle"
-          width="40"
-          height="40"
-        /> <!--need to work on this-->
-        <div class="ms-3">
-          <div class="fw-bold" id="usernameDisplay">Guest</div>
-          <!-- Display username -->
-          <small class="text-muted" id="userRoleDisplay">Visitor</small>
-        </div>
+      <div class="ms-3">
+        <div class="fw-bold" id="usernameDisplay">Guest</div>
+        <small class="text-muted" id="userRoleDisplay">Visitor</small>
       </div>
-      <a href="/logout" class="btn btn-sm btn-outline-danger" id="logoutButton">
+      <button class="btn btn-sm btn-outline-danger" id="logoutButton">
         <i class="fas fa-sign-out-alt"></i>
-      </a>
+      </button>
     </div>
   </div>
 </div>
+

@@ -8,6 +8,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
   <!-- Bootstrap Library CSS CDN go here -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -34,6 +35,7 @@
   <!-- <link rel="stylesheet" href="./styles/style.css"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="./styles/style.css">
+  <link rel="stylesheet" href="./styles/style_user_marker.css">
   <link rel="stylesheet" href="./styles/style_navbar.css">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
@@ -41,13 +43,7 @@
 </head>
 
 <body>
-  <!-- Add this container for FirebaseUI -->
-  <div id="firebaseui-auth-container"></div>
-  <!------------------------------>
-  <!-- Your HTML Layout go here -->
-  <!------------------------------>
-  <!-- Stuff for body goes here -->
-
+  
   <!------------------------------>
   <!-- Your HTML Layout go here -->
   <!------------------------------>
@@ -56,14 +52,9 @@
   <!-- our own navbar goes here -->
   <div id="navbarPlaceholder"></div>
 
-  <!-- Nikolas - Welcome Hero Screen-->
-  <div class="jumbotron mt-3">
-    <h1 class="display-4">Welcome!</h1>
-  </div>
-
-
   <!-- Flex row to hold session indicator and form side-by-side -->
-  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5">
+   
+  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5 mt-5" id="session-indicator-container">
 
     <!-- Enhanced session status display -->
     <div id="session-indicator-wrapper"
@@ -81,8 +72,8 @@
 
     <!-- Create Session button + popup form -->
 
-    <div class="d-flex flex-column align-items-start gap-1"> <!--holds session and chat button-->
-      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()">Create Session</button>
+    <div class="d-flex flex-column align-items-start gap-1" id="create-session"> <!--holds session and chat button-->
+      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()"><i class="fas fa-plus-circle me-2"></i>Create Session</button>
 
       <div id="sessionFormPopup" style="display: none;">
         <form id="sessionForm" class="border rounded p-3 bg-light">
@@ -115,19 +106,26 @@
             </select>
           </div>
 
+          <div class="mb-3">
+            <label for="subjectSelect" class="form-label">Choose a subject</label>
+            <select class="form-select" id="subjectSelect" required>
+              <option value="">Select one...</option>
+              <!-- JS will dynamically add program subject + "other" -->
+            </select>
+          </div>
+
           <!--  Disabled by default -->
-          <button type="submit" class="btn btn-success" id="submitSessionBtn" disabled
-            onclick="console.log('[Debug] Submit button clicked')">
-            Submit Form
-          </button>
-          <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel Form</button>
+          <div class="form-button-group">
+            <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel</button>
+            <button type="submit" class="btn btn-success">Submit Form</button>
+        </div>
         </form>
       </div>
 
       <!-- Chat Button and Chat Popup -->
       <!-- Chat Button -->
       <button id="chatboxBtn" class="btn btn-sage btn-sm mb-2 w-100 position-relative" onclick="toggleChatForm()">
-        Chatbox
+        <i class="fas fa-comments me-2"></i>Chat
         <span id="chatNotification"
           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">
           !
@@ -146,9 +144,10 @@
 
           <label for="chatInput" class="form-label">Your Message</label>
           <input type="text" class="form-control mb-3" id="chatInput" placeholder="Type your message" required>
-
-          <button type="submit" class="btn btn-success">Send</button>
-          <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
+          <div class="form-button-group">
+              <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
+              <button type="submit" class="btn btn-success">Send</button>
+          </div>
 
           <ul id="chat-messages" class="mt-3 list-unstyled text-start"></ul>
         </form>
@@ -156,72 +155,106 @@
     </div>
   </div>
 
-    <div id="map-container" style='width: 90%; height: 600px; margin-left: auto; margin-right: auto; position: relative;'>
-      <!-- MAPBOX -->
-      <div id='map' style='width: 100%; height: 600px; position: relative;'>
-      </div>
-      <!-- Location overlay inside the map -->
-      <div id="location" style="
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-weight: bold;
-    z-index: 1;
-    pointer-events: none;">
-        Detecting your location...
-      </div>
-    </div>
+    <!-- Map Section -->
+  <section id="map-section" class="studynav-card mb-4">        
+    <div class="card-header">
+          <h2><i class="fas fa-map-marked-alt me-2"></i>Campus Map</h2>
+        </div>
+        <div class="card-body p-0">
+          <div id="map-container">
+            <div id="map"></div>
+            <div id="location" class="map-location-label">
+              <i class="fas fa-location-dot me-2"></i>Detecting your location...
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <button id="recenter-button" class="btn btn-outline-primary">
+              <i class="fas fa-location-arrow me-2"></i>Recenter
+            </button>
+            <button id="enter-program-btn" class="btn btn-outline-success">
+              <i class="fas fa-plus-circle me-2"></i>Add Program
+            </button>
+          </div>
+          
+          <div id="program-code-form" class="program-code-form mt-3" style="display: none;">
+            <div class="input-group">
+              <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code">
+              <button id="submitProgramCodeBtn" class="btn btn-success">
+               Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End of Map Section -->
+ 
+
+    <!-- Motivation Section -->
+<section id="motivation-area" class="studynav-card">
+  <div class="card-header">
+    <h2><i class="fas fa-lightbulb me-2"></i>Study Motivation</h2>
+  </div>
+  <div class="card-body">
+    <button id="toggleMotivationBarBtn" class="btn" onclick="toggleMotivationBar()">
+    <i class="fas fa-magic me-2"></i>Get Inspired
+    </button>
     
-    <!-- Recenter -->
-    <div>
-      <br>
-      <button id="recenter-button">Recenter The Map</button>
-      <button id="enter-program-btn">Add Program</button>
-      <div id="program-code-form" style="display: none;" class="mt-2">
-        <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code" />
-        <button id="submitProgramCodeBtn" class="btn btn-primary mt-2">Submit</button>
+    <div id="motivationBar" class="motivation-content" style="display: none;">
+      <div class="input-group mb-3">
+        <input type="text" id="topicInput" class="form-control" placeholder="Enter a topic (e.g., math)">
+        <button id="getMotivationBtn" class="btn btn-success">
+          <i class="fas fa-search me-2"></i>Search
+        </button>
       </div>
-
+      
+      <div class="mt-4">
+        <p id="motivationText" class="motivation-quote">
+          <i class="fas fa-quote-left quote-icon"></i>
+          <span class="quote-text">Your motivational quote will appear here...</span>
+        </p>
+      </div>
     </div>
-
-    <div id="pop-menu">
-      <div id="directions-panel" style="margin-top: 10px;">
-      </div>
-
+  </div>
+</section>
 
       <!-- Directions -->
-      <div>
-        <div class="card">
+     <div id="pop-menu" class="show" style="display: none;">
+    <div id="directions-panel" class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+            <button class="close-btn">&times;</button>
         </div>
-      </div>
-
-      <div id="pop-menu">
-        <div id="directions-panel" style="margin-top: 10px;">
-
+        <div class="card-body">
+            <!-- Directions steps will be inserted here -->
+            <div class="step">
+            </div>
+            <!-- More steps would go here -->
         </div>
-      </div>
+        <div class="card-footer">
+            <button class="action-btn primary">Close</button>
+        </div>
+    </div>
+</div>
 
 
       <footer class="mt-auto py-3 border-top">
-      <div class="container d-flex flex-wrap justify-content-between align-items-center">
-          <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
-          <div class="social-links">
-              <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
-              <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
-              <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
-          </div>
-      </div>
-  </footer>
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
+            <div class="social-links">
+                <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
+              </div>
+        </div>
+      </footer>
 
       <!---------------------------------------------->
       <!-- Your own JavaScript functions go here    -->
       <!---------------------------------------------->
 
       <!-- Link to scripts of your own -->
-      <!-- <script src="./scripts/script.js"></script> -->
       <script src="./scripts/main.js"></script>
       <script src="./scripts/script.js"></script>
       <script src="./scripts/skeleton.js"></script>
@@ -233,5 +266,4 @@
       <script src="./scripts/navbar.js"></script>
 
 </body>
-
 </html>

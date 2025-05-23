@@ -1,19 +1,21 @@
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + '/../.env' });
 const http = require("http");
 const { Server } = require("socket.io");
 const express = require("express");                  // Import Express framework
 const mongoose = require("mongoose");
 const Student = require('./models/Student');        // Import Mongoose for MongoDB (student schema)
 const User = require('./models/User');         // Import Mongoose for MongoDB (student schema)
-console.log("User model loaded:", typeof Student === 'function');
 const Admin = require('./models/Admin');             // Import Mongoose for MongoDB (admin schema)
-console.log("User model loaded:", typeof Admin === 'function');
+const Program = require('./models/Program');         //Import Mongoose for MongoDB (program schema)
 const Session = require('./models/Session');         //  Import the real schema
 const bcrypt = require("bcryptjs");                  // Import bcrypt for hashing passwords
 const cors = require("cors");                        // Import CORS to allow cross-origin requests
 const multer = require("multer");                  // Import multer for file uploads
 const path = require("path");                      // Import path for file paths
+const aiRoute = require("./ai");
+console.log("[server.js] AI route mounted at /api/ai");
 const app = express();  // Create Express app instance
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/../')); // This is not secure...
@@ -21,6 +23,9 @@ app.use('/images', express.static(__dirname + '/../images'));
 
 const port = process.env.PORT || 8000; //  .env port or fallback to 8000
 app.use(cors());                                     // Enable CORS
+app.use("/api/ai", aiRoute);
+
+
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
@@ -39,7 +44,11 @@ const upload = multer({
 });
 
 
-// Route: Signup
+/**
+ * Signs up the user using the values of name, email and password into the database ensuring 
+ * that the name and email is unique. Depending on the client's param type, a role is assigned, 
+ * either student or admin. 
+ */
 app.post('/signup', async (req, res) => {
   console.log("SIGNUP BODY:", req.body);
   const { name, email, password } = req.body;
@@ -49,6 +58,7 @@ app.post('/signup', async (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
+  // Checking which page the user signed up on
   const type = req.query.type;
   let role;
 
@@ -139,6 +149,89 @@ app.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * Creates a program using values of name, length, courses, code, and subject into the
+ * database, ensuring that the name, courses and code are unique.
+ */
+app.post('/programCreation', async (req, res) => {
+  const { name, length, courses, code, subject } = req.body;
+
+  // Check to ensure that all required fields are filled out
+  if (!name || !length || !courses || !code || !subject) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  try
+  {
+    // Checks to make sure that the program name is unique
+    const existingProgram = await Program.findOne({ name });
+    if (existingProgram) 
+    {
+      return res.status(409).json({ message: "Program already exists: " + existingProgram });
+    }
+
+    // Checks to make sure that the code is unique
+    const existingCode = await Program.findOne({ code });
+    if (existingCode) 
+    {
+      return res.status(409).json({ message: "Code already exists: " + existingCode });
+    }
+
+    // Checks to make sure that the courses are unique
+    for(let i = 0; i < courses.length; i++)
+    {
+      const course = courses[i];
+      const existingCourse = await Program.findOne({ course });
+      if(existingCourse)
+      {
+        return res.status(409).json({ message: "Course already exists: " + course })
+      }
+    }
+    
+    // Creates a new program
+    const newProgram = new Program({
+      name: name,
+      courses: courses,
+      numberOfStudents: 0,
+      accessCode: code,
+      length: length,
+      subject: subject
+    });
+
+    await newProgram.save();
+
+    // Inform the client side that the program creation was successful
+    console.log("Program Creation Successful");
+    res.status(200).json({ message: "Creation successful"});
+  }
+  catch (e) 
+  {
+    // Inform the client side that the program creation was a failure
+    console.error("Signup error:", e);
+    res.status(500).json({ message: "Server error." });
+  }
+})
+
+/**
+ * Fetches all program data from the database and sends it to the client side.
+ */
+app.get('/adminData', async (req, res) => {
+  try
+  {
+    // Finding all program data in the database
+    const programData = await Program.find();
+    console.log("successfully fetched data" + programData);
+    // Sending data to the client side.
+    res.json(programData);
+  }
+  catch(e)
+  {
+    // Informs the client side that data retrieval has failed
+    console.log("Error fetching program data" + e);
+    res.status(500).json({message: "Failed to fetch program data"});
+  }
+});
+
 //  Route: Get user document by ID
 app.get('/users/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -179,10 +272,6 @@ app.get('/users/:userId', async (req, res) => {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error." });
   }
-});
-
-app.post('/programCreation', async (req, res) => {
-  
 });
 
 //  Route: Get user document by ID
@@ -250,7 +339,8 @@ app.post('/sessions', async (req, res) => {
       members,
       course,
       program,
-      courses
+      courses,
+      subject
     } = req.body;
 
     const newSession = new Session({
@@ -262,7 +352,8 @@ app.post('/sessions', async (req, res) => {
       members,
       course,
       program,
-      courses
+      courses,
+      subject
     });
 
 
@@ -457,11 +548,11 @@ app.put('/profile/admin/:id', async (req, res) => {
   }
 });
 
-const Program = require('./models/Program'); // ⬅️ If not already present
+// const Program = require('./models/Program'); // ⬅️ If not already present
 
 app.get('/programs/:code', async (req, res) => {
   try {
-    const program = await Program.findOne({ code: req.params.code });
+    const program = await Program.findOne({ accessCode: req.params.code }); // <- FIXED
     if (!program) return res.status(404).json({ message: "Program not found." });
     res.json(program);
   } catch (err) {
@@ -501,30 +592,40 @@ app.post('/profile/:id/image', upload.single('image'), async (req, res) => {
   }
 });
 
+
 // Get profile image
 app.get('/profile/:id/image', async (req, res) => {
-  const { id } = req.params;
-
   try {
-    // Check student first
-    const student = await Student.findById(id);
-    if (student && student.image) {
-      res.set('Content-Type', student.image.contentType);
-      return res.send(student.image.data);
+    // Check student
+    const student = await Student.findById(req.params.id).lean();
+    if (student?.image?.data) {
+      return res
+        .set('Content-Type', student.image.contentType)
+        .send(student.image.data);
     }
 
-    // Then check admin
-    const admin = await Admin.findById(id);
-    if (admin && admin.image) {
-      res.set('Content-Type', admin.image.contentType);
-      return res.send(admin.image.data);
+    // Check admin
+    const admin = await Admin.findById(req.params.id).lean();
+    if (admin?.image?.data) {
+      return res
+        .set('Content-Type', admin.image.contentType)
+        .send(admin.image.data);
     }
 
-    // Return default image if no image found
-    const defaultImagePath = path.join(__dirname,  'images', 'default.avif');
-    return res.sendFile(defaultImagePath);
+    // Serve default image
+    const defaultImagePath = path.resolve(__dirname, '../images/default.avif');
+    
+    if (!fs.existsSync(defaultImagePath)) {
+      return res.status(404).send("Default image not found");
+    }
+
+    return res.sendFile(defaultImagePath, {
+      headers: { 'Content-Type': 'image/avif' }
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Profile image error:", error);
+    return res.status(500).send("Server error");
   }
 });
 
@@ -570,6 +671,67 @@ app.delete('/profile/:id', async (req, res) => {
     });
   }
 });
+
+//Update program document ROUTE
+app.post('/programs/increment', async (req, res) => {
+  const { programName } = req.body;
+
+  if (!programName) {
+    return res.status(400).json({ message: "Program name is required." });
+  }
+
+  try {
+    const updatedProgram = await Program.findOneAndUpdate(
+      { name: programName },
+      { $inc: { numberOfStudents: 1 } },
+      { new: true }
+    );
+
+    if (!updatedProgram) {
+      return res.status(404).json({ message: "Program not found." });
+    }
+
+    console.log("[Program] numberOfStudents incremented for:", updatedProgram.name);
+    res.json(updatedProgram);
+  } catch (error) {
+    console.error("Error incrementing program count:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log("Logout request for user:", userId);
+    
+    // Clean up Socket.IO connections if needed
+    if (userId && connectedUsers[userId]) {
+      delete connectedUsers[userId];
+      console.log(`Cleaned up Socket.IO connections for user ${userId}`);
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Logout successful' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Logout failed' 
+    });
+  }
+});
+
+app.use((req, res, next) => {
+  res.status(404);
+  res.sendFile(path.join(__dirname, '../404.html'), err => {
+      if (err) {
+        res.status(404).json({ message: "404 - Not Found" });
+      }
+  });
+});
+
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

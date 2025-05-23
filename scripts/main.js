@@ -1,3 +1,26 @@
+window.latestCoords = null;
+
+function checkAuth() {
+    const userId = sessionStorage.getItem('userId');
+    const currentPage = window.location.pathname.split('/').pop();
+
+    // List of protected pages that require login
+    const protectedPages = ['main.html', 'adminMain.html', 'profile.html', 'setting.html'];
+
+    if (protectedPages.includes(currentPage) && !userId) {
+        // Redirect to index.html if not logged in
+        window.location.href = 'index.html';
+        return false;
+    }
+
+    return true;
+}
+
+// Run the check before anything else
+if (!checkAuth()) {
+    // Stop execution if not authenticated
+    throw new Error("Unauthorized access - redirecting to login");
+}
 function showMap() {
 
     //---------------------------------------------------------------------------------
@@ -34,61 +57,97 @@ function showMap() {
     //---------------------------------------------------------------------------------
     // STEP TWO:  Initialize the map
     // This function will create the map object and add the user's location to the map
-    // as a pin. It will also add an event listener for when the user clicks on the map
+    // as a marker. It will also add an event listener for when the user clicks on the map
     // to get the route from the user's location to the clicked location.
     //
-    // @params   coords:  an object with the user's location as a key-value pair
     //---------------------------------------------------------------------------------
     function initializeMap(coords) {
+        var currentUserLocation = [coords.lng, coords.lat];
+        console.log(currentUserLocation);
 
-        //---------------------------------------------------------------
-        // Convert the key value pair structure to an array of coordinates
-        //---------------------------------------------------------------
-        var userLocation = [coords.lng, coords.lat];   //user's location 
-        console.log(userLocation);
-        //----------------------
-        // Create the map "map"
-        //----------------------
         mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/-clankaplum-/cmah0v57300sl01rffo7kdydx', // Styling URL,
-            center: userLocation, // center the map at the user's location
-            //center: [-123.0019, 49.2490], // Starting position
+            style: 'mapbox://styles/-clankaplum-/cmah0v57300sl01rffo7kdydx',
+            center: currentUserLocation,
             zoom: 15,
-            projection: 'mercator' // Force Mercator projection
+            projection: 'mercator'
         });
 
-        //---------------------------------------------------------------------------------
-        // Add the user's location to the map
-        //---------------------------------------------------------------------------------
-        showPoint(map, userLocation);
+        // ---------------------------------------------------------------------
+        // Create an html element for the user's marker.
+        // Add a marker for a user when the map loads. 
+        // ---------------------------------------------------------------------
+        const markerElement = document.createElement('div');
+        markerElement.className = 'user-marker';
 
-        //---------------------------------------------------------------------------------
-        // Add the clicked location to the map
-        // After the click, get the route from the user's location to the clicked location
-        //---------------------------------------------------------------------------------
-        getClickedLocation(map, (clickedLocation) => {
-            getRoute(map, userLocation, clickedLocation);
-        });
+        const userMarker = new mapboxgl.Marker(markerElement)
+            .setLngLat(currentUserLocation)
+            .setPopup(new mapboxgl.Popup().setText("You are here"))
+            .addTo(map);
 
-        //---------------------------------------------------------------------------------
-        // recenters the map onto the user.
-        //---------------------------------------------------------------------------------
-        recenterMap(map, userLocation);
+        // ---------------------------------------------------------------------
+        // Track user movement
+        // Use the geolocations "watchPosition" functionality.
+        // ---------------------------------------------------------------------
+        if (navigator.geolocation) {
+            console.log("[Geo] Starting watchPosition — continuous tracking initialized.");
 
-        //---------------------------------
-        // Add interactive pins for the sessions
-        //---------------------------------
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    console.log("[Geo] watchPosition update received:", position.coords);
+
+                    try {
+                        currentUserLocation = [position.coords.longitude, position.coords.latitude];
+                        window.latestCoords = currentUserLocation;
+
+                        console.log("User moved to:", currentUserLocation);
+
+                        // Defensive check to avoid crashing
+                        if (currentUserLocation.every(coord => typeof coord === 'number')) {
+                            userMarker.setLngLat(currentUserLocation);
+                            // Optional: map.flyTo({ center: updatedCoords, zoom: 15 });
+                        } else {
+                            console.warn("Invalid coordinates received:", currentUserLocation);
+                        }
+                    } catch (err) {
+                        console.error("Error during location update:", err);
+                    }
+                },
+                (err) => {
+                    console.warn("watchPosition error:", err);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 10000
+                }
+            );
+        }
+
+        // Call Recentering Functionality
+        recenterMap(map, () => currentUserLocation);
+
+        // Load the pins for the sessions
         loadSessions(map);
+
+        // Enable route drawing
+        getClickedLocation(map, (clickedLocation) => {
+            getRoute(map, currentUserLocation, clickedLocation);
+        });
     }
+
 }
 showMap();
 
-function recenterMap(map, userLocation) {
+// ---------------------------------------------------------------------
+// Cneters the map on the user's location with the click of a button.
+// ---------------------------------------------------------------------
+function recenterMap(map, getLocation) {
     document.getElementById("recenter-button").addEventListener("click", () => {
-        map.flyTo({ center: userLocation, zoom: 15 })
-    })
+        const coords = getLocation();
+        map.flyTo({ center: coords, zoom: 15 });
+    });
 }
 
 // update the Length button's text when a dropdown item is selected.
@@ -101,7 +160,8 @@ function updateLength(length) {
 // Fetch all sessions and populate the map
 async function loadSessions(map) {
     try {
-        const response = await fetch('http://localhost:8000/sessions');
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/sessions`);
         if (!response.ok) {
             console.error("Failed to load session data:", response.statusText);
             return;
@@ -196,75 +256,6 @@ function addSessionPinsLayer(map, features) {
     });
 }
 
-
-// Update the initializeMap function to call loadSession
-function initializeMap(coords) {
-    var userLocation = [coords.lng, coords.lat];
-    mapboxgl.accessToken = 'pk.eyJ1IjoiLWNsYW5rYXBsdW0tIiwiYSI6ImNtODR0Zm54YzJhenAyanEza2Z3eG50MmwifQ.Kx9Kioj3BBgqC5-pSkZkNg';
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: userLocation,
-        zoom: 15
-    });
-
-    // Show user's location
-    showPoint(map, userLocation);
-
-    // Add session pins to the map
-    loadSession(map);
-
-    // Add click handler for getting route
-    getClickedLocation(map, (clickedLocation) => {
-        getRoute(map, userLocation, clickedLocation);
-    });
-}
-
-// Load all of the session pin images in this function.
-function loadSessionPinImages(map, session) {
-
-}
-
-// ---------------------------------------------------------------------
-// Add a pin for point that is provided as a parameter point (lat, long)
-// when the map loads. Note map.on is an event listener. 
-//
-// @params   map:  the map object;
-//           point:  an array of [lng, lat] coordinates
-// ---------------------------------------------------------------------
-function showPoint(map, point) {
-    map.on('load', () => {
-        //a point is added via a layer
-        map.addLayer({
-            id: 'point',
-            type: 'circle',
-            source: {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: [
-                        {
-                            type: 'Feature',
-                            properties: {},
-                            geometry: {
-                                type: 'Point',
-                                coordinates: point
-                            }
-                        }
-                    ]
-                }
-            },
-            paint: {
-                'circle-radius': 10,
-                'circle-color': '#3887be',
-                'circle-stroke-width': 6,
-                'circle-stroke-color': '#7ED9CA',
-                'circle-stroke-opacity': 0.70
-            }
-        });
-    });
-}
-
 //-----------------------------------------------------------------------------
 // This function is asynchronous event listener for when the user clicks on the map.
 // This function will return in the callback, the coordinates of the clicked location
@@ -332,68 +323,161 @@ function getClickedLocation(map, callback) {
 //           start and end:  arrays of [lng, lat] coordinates
 // -------------------------------------------------------------
 async function getRoute(map, start, end) {
-    // make a directions request using cycling profile
-    // an arbitrary start will always be the same
-    // only the end or destination will change
-    const query = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
-        { method: 'GET' }
-    );
-    const json = await query.json();
-    const data = json.routes[0];
-    const route = data.geometry.coordinates;
-    const steps = data.legs[0].steps;
-    const minutesDuration = Math.round(data.duration / 60);
+    try {
+        // Show loading state
+        const directionsPanel = document.getElementById('directions-panel');
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating route...</p>
+                </div>
+            </div>
+        `;
 
-    const directionsPanel = document.getElementById('directions-panel');
-    directionsPanel.innerHTML = ""; // clear previous
+        document.getElementById('pop-menu').style.display = 'block';
 
-    // Estimate for travel time.
-    const timeEstimate = document.createElement("h4");
-    timeEstimate.textContent = `Estimated time: ${minutesDuration} min`;
-    directionsPanel.appendChild(timeEstimate);
+        // Make directions request
+        const query = await fetch(
+            `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+            { method: 'GET' }
+        );
 
-    // Written directions to location.
-    steps.forEach((step, index) => {
-        const instruction = document.createElement("p");
-        instruction.textContent = `${index + 1}. ${step.maneuver.instruction}`;
-        directionsPanel.appendChild(instruction);
-    });
+        if (!query.ok) throw new Error('Failed to fetch directions');
 
-    console.log("route is " + route);
-    const geojson = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-            type: 'LineString',
-            coordinates: route
+        const json = await query.json();
+        const data = json.routes[0];
+        const route = data.geometry.coordinates;
+        const steps = data.legs[0].steps;
+        const minutesDuration = Math.round(data.duration / 60);
+        const distance = (data.distance / 1000).toFixed(1);
+
+        // Update directions panel
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="route-summary d-flex justify-content-between align-items-center mb-3">
+                    <div class="route-time">
+                        <i class="fas fa-clock text-success me-2"></i>
+                        <span>${minutesDuration} min</span>
+                    </div>
+                    <div class="route-distance">
+                        <i class="fas fa-route text-success me-2"></i>
+                        <span>${distance} km</span>
+                    </div>
+                </div>
+                <div class="steps-list">
+                    ${steps.map((step, index) => `
+                        <div class="step">
+                            <div class="step-icon">
+                                ${getStepIcon(step.maneuver.type, step.maneuver.modifier)}
+                            </div>
+                            <div class="step-text">
+                                <div class="step-instruction">${step.maneuver.instruction}</div>
+                                <div class="step-distance">${(step.distance / 1000).toFixed(1)} km</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary w-100" style="background-color: #4a8c5e" onclick="document.getElementById('pop-menu').style.display='none'">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        `;
+
+        // Draw route on map
+        const geojson = {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+                type: 'LineString',
+                coordinates: route
+            }
+        };
+
+        if (map.getSource('route')) {
+            map.getSource('route').setData(geojson);
+        } else {
+            map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: {
+                    type: 'geojson',
+                    data: geojson
+                },
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#4a8c5e',
+                    'line-width': 4,
+                    'line-opacity': 0.8
+                }
+            });
         }
+
+    } catch (error) {
+        console.error('Error getting directions:', error);
+        directionsPanel.innerHTML = `
+            <div class="card-header">
+                <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+                <button class="close-btn" onclick="document.getElementById('pop-menu').style.display='none'">&times;</button>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Failed to get directions. Please try again.
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary w-100" onclick="document.getElementById('pop-menu').style.display='none'">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Updated icon mapping with proper Font Awesome classes
+function getStepIcon(type, modifier) {
+    const icons = {
+        'turn': {
+            'left': 'fa-arrow-left',
+            'right': 'fa-arrow-right',
+            'sharp left': 'fa-arrow-left-long',
+            'sharp right': 'fa-arrow-right-long',
+            'slight left': 'fa-arrow-left',
+            'slight right': 'fa-arrow-right',
+            'uturn': 'fa-arrow-rotate-left',
+            'default': 'fa-arrow-right'
+        },
+        'depart': 'fa-location-dot',
+        'arrive': 'fa-flag-checkered',
+        'continue': 'fa-arrow-right',
+        'roundabout': 'fa-rotate-right',
+        'rotary': 'fa-arrows-rotate',
+        'fork': 'fa-code-fork',
+        'merge': 'fa-arrow-right-arrow-left',
+        'new name': 'fa-signature',
+        'default': 'fa-arrow-right'
     };
 
-    // if the route already exists on the map, we'll reset it using setData
-    if (map.getSource('route')) {
-        map.getSource('route').setData(geojson);
+    if (type === 'turn') {
+        return `<i class="fas ${icons.turn[modifier] || icons.turn.default}"></i>`;
     }
-    // otherwise, we'll make a new request
-    else {
-        map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: {
-                type: 'geojson',
-                data: geojson
-            },
-            layout: {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            paint: {
-                'line-color': '#00FF00',
-                'line-width': 5,
-                'line-opacity': 0.75
-            }
-        });
-    }
+    return `<i class="fas ${icons[type] || icons.default}"></i>`;
 }
 
 /**
@@ -426,8 +510,47 @@ function toggleForm() {
         } else {
             console.warn("[main.js] Dropdown already populated or no courses in sessionStorage");
         }
+
+        const subjectSelect = document.getElementById("subjectSelect");
+        const programSubject = sessionStorage.getItem("programSubject");
+        if (subjectSelect && subjectSelect.options.length <= 1) {
+            console.log("[main.js] Populating subject dropdown:", programSubject);
+            subjectSelect.innerHTML = `<option value="">Select one...</option>`;
+
+            if (programSubject) {
+                // Add the program's subject (e.g., "math")
+                const optionMain = document.createElement("option");
+                optionMain.value = programSubject;
+                optionMain.textContent = programSubject.charAt(0).toUpperCase() + programSubject.slice(1);
+                subjectSelect.appendChild(optionMain);
+            }
+
+            // Add 'Other' as fallback
+            const optionOther = document.createElement("option");
+            optionOther.value = "default";
+            optionOther.textContent = "Other";
+            subjectSelect.appendChild(optionOther);
+        }
     }
 }
+window.toggleMotivationBar = function () {
+    const bar = document.getElementById("motivationBar");
+    const computedDisplay = window.getComputedStyle(bar).display;
+    const isBarVisible = computedDisplay !== "none";
+
+    console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+    console.log("Toggling to:", isBarVisible ? "none" : "flex");
+
+    if (isBarVisible) {
+        bar.style.display = "none";
+        bar.classList.remove("d-flex");
+    } else {
+        bar.style.display = "flex";
+        bar.classList.add("d-flex");
+    }
+};
+
+
 
 
 
@@ -450,6 +573,7 @@ function checkFormReady() {
 // Add listeners to ALL inputs
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
+    // Enable submit button on input
     const descInput = document.getElementById("sessionFormInput");
     const courseSelect = document.getElementById("courseSelect");
     const dropdown = document.getElementById("lengthInput");
@@ -468,6 +592,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 form.addEventListener("submit", (e) => {
                     e.preventDefault();
                     console.log("[Debug] Form submit triggered.");
+                    console.log("[FormSubmit] Calling writeSessions() now...");
+
                     writeSessions();
                     toggleForm();
                 });
@@ -479,3 +605,110 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+document.getElementById("getMotivationBtn").addEventListener("click", async () => {
+    const topic = document.getElementById("topicInput").value.trim();
+    const output = document.getElementById("motivationText");
+
+    console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+
+    if (!topic) {
+        output.textContent = "Please enter a topic first.";
+        return;
+    }
+
+    output.textContent = "Thinking... ✨";
+
+    try {
+        console.log("[main.js] About to make fetch call");
+        const response = await fetch("/api/ai/motivate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic })
+        });
+
+        const data = await response.json();
+
+        console.log("[getMotivationBtn] Server response:", data); // log full response
+
+        if (response.ok && data.message) {
+            output.textContent = data.message;
+        } else {
+            output.textContent = "Hmm, I couldn't come up with anything just now.";
+        }
+    } catch (err) {
+        console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
+        output.textContent = "Something went wrong. Please try again later.";
+    }
+});
+
+
+//getMotivationBtn click listener ends here)
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) {
+        console.warn("[UX] No user ID found in sessionStorage.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/profile/${userId}`);
+        const user = await res.json();
+
+        if (user.session) {
+            console.log("[UX] Active session found for user — disabling Create Session.");
+            const createBtn = document.querySelector(".btn-sage");
+            if (createBtn) {
+                createBtn.setAttribute("aria-disabled", "true");
+                createBtn.classList.add("disabled");
+                createBtn.style.opacity = "0.8";
+                createBtn.style.pointerEvents = "none"; // disables click but keeps hover and tooltip
+                createBtn.title = "You already have an active session.";
+            }
+        } else {
+            console.log("[UX] No active session — Create Session is enabled.");
+        }
+    } catch (err) {
+        console.error("[UX] Error checking user session status:", err);
+    }
+});
+
+// create a sparkles effect on button click
+document.getElementById('toggleMotivationBarBtn').addEventListener('click', function (e) {
+    createSparkles(e.clientX, e.clientY);
+});
+
+function createSparkles(x, y) {
+    for (let i = 0; i < 20; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+
+        // Use colors for sparkles
+        const colors = ['#e0f7e5', '#a7f2b3', '#c8f5d0'];
+        sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        document.body.appendChild(sparkle);
+
+        // Random movement
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 2 + Math.random() * 3;
+        let posX = x;
+        let posY = y;
+
+        const animate = () => {
+            posX += Math.cos(angle) * velocity;
+            posY += Math.sin(angle) * velocity;
+            sparkle.style.left = `${posX}px`;
+            sparkle.style.top = `${posY}px`;
+        };
+
+        let interval = setInterval(animate, 16);
+        setTimeout(() => {
+            clearInterval(interval);
+            sparkle.remove();
+        }, 1000);
+    }
+}
+
