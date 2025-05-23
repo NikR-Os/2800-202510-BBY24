@@ -3,16 +3,16 @@ window.latestCoords = null;
 function checkAuth() {
     const userId = sessionStorage.getItem('userId');
     const currentPage = window.location.pathname.split('/').pop();
-    
+
     // List of protected pages that require login
     const protectedPages = ['main.html', 'adminMain.html', 'profile.html', 'setting.html'];
-    
+
     if (protectedPages.includes(currentPage) && !userId) {
         // Redirect to index.html if not logged in
         window.location.href = 'index.html';
         return false;
     }
-    
+
     return true;
 }
 
@@ -340,7 +340,7 @@ async function getRoute(map, start, end) {
                 </div>
             </div>
         `;
-        
+
         document.getElementById('pop-menu').style.display = 'block';
 
         // Make directions request
@@ -348,7 +348,7 @@ async function getRoute(map, start, end) {
             `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             { method: 'GET' }
         );
-        
+
         if (!query.ok) throw new Error('Failed to fetch directions');
 
         const json = await query.json();
@@ -510,23 +510,44 @@ function toggleForm() {
         } else {
             console.warn("[main.js] Dropdown already populated or no courses in sessionStorage");
         }
+
+        const subjectSelect = document.getElementById("subjectSelect");
+        const programSubject = sessionStorage.getItem("programSubject");
+        if (subjectSelect && subjectSelect.options.length <= 1) {
+            console.log("[main.js] Populating subject dropdown:", programSubject);
+            subjectSelect.innerHTML = `<option value="">Select one...</option>`;
+
+            if (programSubject) {
+                // Add the program's subject (e.g., "math")
+                const optionMain = document.createElement("option");
+                optionMain.value = programSubject;
+                optionMain.textContent = programSubject.charAt(0).toUpperCase() + programSubject.slice(1);
+                subjectSelect.appendChild(optionMain);
+            }
+
+            // Add 'Other' as fallback
+            const optionOther = document.createElement("option");
+            optionOther.value = "default";
+            optionOther.textContent = "Other";
+            subjectSelect.appendChild(optionOther);
+        }
     }
 }
 window.toggleMotivationBar = function () {
-  const bar = document.getElementById("motivationBar");
-  const computedDisplay = window.getComputedStyle(bar).display;
-  const isBarVisible = computedDisplay !== "none";
+    const bar = document.getElementById("motivationBar");
+    const computedDisplay = window.getComputedStyle(bar).display;
+    const isBarVisible = computedDisplay !== "none";
 
-  console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
-  console.log("Toggling to:", isBarVisible ? "none" : "flex");
+    console.log("TOGGLE triggered. Computed display:", computedDisplay, " → isVisible:", isBarVisible);
+    console.log("Toggling to:", isBarVisible ? "none" : "flex");
 
-  if (isBarVisible) {
-    bar.style.display = "none";
-    bar.classList.remove("d-flex");
-  } else {
-    bar.style.display = "flex";
-    bar.classList.add("d-flex");
-  }
+    if (isBarVisible) {
+        bar.style.display = "none";
+        bar.classList.remove("d-flex");
+    } else {
+        bar.style.display = "flex";
+        bar.classList.add("d-flex");
+    }
 };
 
 
@@ -585,75 +606,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 document.getElementById("getMotivationBtn").addEventListener("click", async () => {
-  const topic = document.getElementById("topicInput").value.trim();
-  const output = document.getElementById("motivationText");
+    const topic = document.getElementById("topicInput").value.trim();
+    const output = document.getElementById("motivationText");
 
-  console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
+    console.log("[getMotivationBtn] Topic submitted:", topic); // log user input
 
-  if (!topic) {
-    output.textContent = "Please enter a topic first.";
-    return;
-  }
-
-  output.textContent = "Thinking... ✨";
-
-  try {
-    console.log("[main.js] About to make fetch call");
-    const response = await fetch("/api/ai/motivate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic })
-    });
-
-    const data = await response.json();
-
-    console.log("[getMotivationBtn] Server response:", data); // log full response
-
-    if (response.ok && data.message) {
-      output.textContent = data.message;
-    } else {
-      output.textContent = "Hmm, I couldn't come up with anything just now.";
+    if (!topic) {
+        output.textContent = "Please enter a topic first.";
+        return;
     }
-  } catch (err) {
-    console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
-    output.textContent = "Something went wrong. Please try again later.";
-  }
+
+    output.textContent = "Thinking... ✨";
+
+    try {
+        console.log("[main.js] About to make fetch call");
+        const response = await fetch("/api/ai/motivate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic })
+        });
+
+        const data = await response.json();
+
+        console.log("[getMotivationBtn] Server response:", data); // log full response
+
+        if (response.ok && data.message) {
+            output.textContent = data.message;
+        } else {
+            output.textContent = "Hmm, I couldn't come up with anything just now.";
+        }
+    } catch (err) {
+        console.error("[getMotivationBtn] Error fetching AI response:", err); //  log error
+        output.textContent = "Something went wrong. Please try again later.";
+    }
 });
 
 
 //getMotivationBtn click listener ends here)
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const userId = sessionStorage.getItem("userId");
-  if (!userId) {
-    console.warn("[UX] No user ID found in sessionStorage.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`/profile/${userId}`);
-    const user = await res.json();
-
-    if (user.session) {
-      console.log("[UX] Active session found for user — disabling Create Session.");
-      const createBtn = document.querySelector(".btn-sage");
-      if (createBtn) {
-        createBtn.setAttribute("aria-disabled", "true");
-        createBtn.classList.add("disabled");
-        createBtn.style.opacity = "0.8";
-createBtn.style.pointerEvents = "none"; // disables click but keeps hover and tooltip
-        createBtn.title = "You already have an active session.";
-      }
-    } else {
-      console.log("[UX] No active session — Create Session is enabled.");
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) {
+        console.warn("[UX] No user ID found in sessionStorage.");
+        return;
     }
-  } catch (err) {
-    console.error("[UX] Error checking user session status:", err);
-  }
+
+    try {
+        const res = await fetch(`/profile/${userId}`);
+        const user = await res.json();
+
+        if (user.session) {
+            console.log("[UX] Active session found for user — disabling Create Session.");
+            const createBtn = document.querySelector(".btn-sage");
+            if (createBtn) {
+                createBtn.setAttribute("aria-disabled", "true");
+                createBtn.classList.add("disabled");
+                createBtn.style.opacity = "0.8";
+                createBtn.style.pointerEvents = "none"; // disables click but keeps hover and tooltip
+                createBtn.title = "You already have an active session.";
+            }
+        } else {
+            console.log("[UX] No active session — Create Session is enabled.");
+        }
+    } catch (err) {
+        console.error("[UX] Error checking user session status:", err);
+    }
 });
 
 // create a sparkles effect on button click
-document.getElementById('toggleMotivationBarBtn').addEventListener('click', function(e) {
+document.getElementById('toggleMotivationBarBtn').addEventListener('click', function (e) {
     createSparkles(e.clientX, e.clientY);
 });
 
@@ -663,26 +684,26 @@ function createSparkles(x, y) {
         sparkle.className = 'sparkle';
         sparkle.style.left = `${x}px`;
         sparkle.style.top = `${y}px`;
-        
+
         // Use colors for sparkles
         const colors = ['#e0f7e5', '#a7f2b3', '#c8f5d0'];
         sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
-        
+
         document.body.appendChild(sparkle);
-        
+
         // Random movement
         const angle = Math.random() * Math.PI * 2;
         const velocity = 2 + Math.random() * 3;
         let posX = x;
         let posY = y;
-        
+
         const animate = () => {
             posX += Math.cos(angle) * velocity;
             posY += Math.sin(angle) * velocity;
             sparkle.style.left = `${posX}px`;
             sparkle.style.top = `${posY}px`;
         };
-        
+
         let interval = setInterval(animate, 16);
         setTimeout(() => {
             clearInterval(interval);
