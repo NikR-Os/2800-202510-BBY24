@@ -1,13 +1,21 @@
-// Handle the sign up for students
+/**
+ * Handles the student sign up through a student sign up button. After clicking the button
+ * the values of name, email and password are taken from page and sent to the server side.
+ * If the server side was successful, the values taken are used to creation a student cookie.
+ */
 document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
   e.preventDefault();
 
+  // The website's orginal url
   const baseUrl = window.location.origin;
+
+  // Grabbing values from the page
   const name = document.getElementById("student-signup-name").value;
   const email = document.getElementById("student-signup-email").value;
   const password = document.getElementById("student-signup-password").value;
 
   try {
+    // Sending the values to the server side
     const res = await fetch(`${baseUrl}/signup?type=student`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -15,34 +23,46 @@ document.getElementById("student-signup-submit").addEventListener("click", async
     });
     const data = await res.json();
 
+      // Checking if the server side was successful
       if (res.ok) {
+        // Informing the user that the sign up was successful
         alert("Signup successful. Logging you in...");
+        // Creating a cookie for the user
         sessionStorage.setItem("userId", data.userId);
         sessionStorage.setItem('userRole', data.role);
         sessionStorage.setItem('userName', data.name);
         sessionStorage.setItem('email', data.email);
+        // Redirecting the user to the main page
         window.location.href = "main.html";
       } else {
+        // Informing the user that the sign up was a failure
         alert("Signup failed: " + data.message);
       }
   } catch (err) {
+    // Informing the user if there are any errors when sending data to the server
     console.error("Signup error:", err);
     alert("Something went wrong during signup.");
   }
 });
 
-
-
-// Handles the sign up for admins 
+/**
+ * Handles the admin sign up through a admin sign up button. After clicking the button
+ * the values of name, email and password are taken from page and sent to the server side.
+ * If the server side was successful, the values taken are used to creation an admin cookie.
+ */
 document.getElementById("admin-signup-submit").addEventListener("click", async (e) => {
   e.preventDefault();
 
+  // The website's orginal url
   const baseUrl = window.location.origin;
+
+  // Grabbing values from the page
   const name = document.getElementById("admin-signup-name").value;
   const email = document.getElementById("admin-signup-email").value;
   const password = document.getElementById("admin-signup-password").value;
 
   try {
+    // Sending the values to the server side
     const res = await fetch(`${baseUrl}/signup?type=admin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,22 +71,27 @@ document.getElementById("admin-signup-submit").addEventListener("click", async (
 
     const data = await res.json();
 
+    // Checking if the server side was successful
     if (res.ok) {
+      // Informing the user that the sign up was successful
       alert("Signup successful. Logging you in...");
       // Optionally auto-login after signup
+      // Creating a cookie for the user
       sessionStorage.setItem("userId", data.userId);
       sessionStorage.setItem('userRole', data.role);
       sessionStorage.setItem('userName', data.name);
+      // Redirecting the user to the admin main page
       window.location.href = "adminMain.html";
     } else {
+      // Informing the user that the sign up was a failure
       alert("Signup failed: " + data.message);
     }
   } catch (err) {
+    // Informing the user if there are any errors when sending data to the server
     console.error("Signup error:", err);
     alert("Something went wrong during signup.");
   }
 });
-
 
 // Handle login
 document.addEventListener("DOMContentLoaded", () => { //Waits until the entire HTML is fully loaded before running the code.
