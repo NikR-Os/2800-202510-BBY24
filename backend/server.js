@@ -44,7 +44,11 @@ const upload = multer({
 });
 
 
-// Route: Signup
+/**
+ * Signs up the user using the values of name, email and password into the database ensuring 
+ * that the name and email is unique. Depending on the client's param type, a role is assigned, 
+ * either student or admin. 
+ */
 app.post('/signup', async (req, res) => {
   console.log("SIGNUP BODY:", req.body);
   const { name, email, password } = req.body;
@@ -54,6 +58,7 @@ app.post('/signup', async (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
+  // Checking which page the user signed up on
   const type = req.query.type;
   let role;
 
@@ -144,21 +149,35 @@ app.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * Creates a program using values of name, length, courses, code, and subject into the
+ * database, ensuring that the name, courses and code are unique.
+ */
 app.post('/programCreation', async (req, res) => {
   const { name, length, courses, code, subject } = req.body;
 
+  // Check to ensure that all required fields are filled out
   if (!name || !length || !courses || !code || !subject) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
   try
   {
+    // Checks to make sure that the program name is unique
     const existingProgram = await Program.findOne({ name });
     if (existingProgram) 
     {
       return res.status(409).json({ message: "Program already exists: " + existingProgram });
     }
 
+    // Checks to make sure that the code is unique
+    const existingCode = await Program.findOne({ code });
+    if (existingCode) 
+    {
+      return res.status(409).json({ message: "Code already exists: " + existingCode });
+    }
+
+    // Checks to make sure that the courses are unique
     for(let i = 0; i < courses.length; i++)
     {
       const course = courses[i];
@@ -169,6 +188,7 @@ app.post('/programCreation', async (req, res) => {
       }
     }
     
+    // Creates a new program
     const newProgram = new Program({
       name: name,
       courses: courses,
@@ -179,31 +199,37 @@ app.post('/programCreation', async (req, res) => {
     });
 
     await newProgram.save();
+
+    // Inform the client side that the program creation was successful
     console.log("Program Creation Successful");
     res.status(200).json({ message: "Creation successful"});
   }
   catch (e) 
   {
+    // Inform the client side that the program creation was a failure
     console.error("Signup error:", e);
     res.status(500).json({ message: "Server error." });
   }
 })
 
+/**
+ * Fetches all program data from the database and sends it to the client side.
+ */
 app.get('/adminData', async (req, res) => {
   try
   {
-    console.log("fetching admin data");
+    // Finding all program data in the database
     const programData = await Program.find();
     console.log("successfully fetched data" + programData);
+    // Sending data to the client side.
     res.json(programData);
   }
   catch(e)
   {
+    // Informs the client side that data retrieval has failed
     console.log("Error fetching program data" + e);
     res.status(500).json({message: "Failed to fetch program data"});
   }
-  
-
 });
 
 //  Route: Get user document by ID
