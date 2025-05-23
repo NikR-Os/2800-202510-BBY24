@@ -106,6 +106,14 @@
             </select>
           </div>
 
+          <div class="mb-3">
+            <label for="subjectSelect" class="form-label">Choose a subject</label>
+            <select class="form-select" id="subjectSelect" required>
+              <option value="">Select one...</option>
+              <!-- JS will dynamically add program subject + "other" -->
+            </select>
+          </div>
+
           <!--  Disabled by default -->
           <div class="form-button-group">
             <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel</button>

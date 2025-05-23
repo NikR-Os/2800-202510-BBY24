@@ -313,7 +313,8 @@ app.post('/sessions', async (req, res) => {
       members,
       course,
       program,
-      courses
+      courses,
+      subject
     } = req.body;
 
     const newSession = new Session({
@@ -325,7 +326,8 @@ app.post('/sessions', async (req, res) => {
       members,
       course,
       program,
-      courses
+      courses,
+      subject
     });
 
 

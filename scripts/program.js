@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Update sessionStorage
       sessionStorage.setItem("programName", updatedStudent.program || "");
       sessionStorage.setItem("courses", JSON.stringify(updatedStudent.courses || []));
+      sessionStorage.setItem("programSubject", program.subject || "default");
 
       // Increment numberOfStudents in the program document
       await fetch("/programs/increment", {

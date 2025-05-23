@@ -13,9 +13,12 @@ async function writeSessions() {
 
     const selectedLength = document.getElementById("sessionLengthValue").value;
     const courseSelect = document.getElementById("courseSelect");
+    const subjectSelect = document.getElementById("subjectSelect");
 
     // Ensure a course is selected before continuing
     const selectedCourse = courseSelect?.value;
+    // Grab the subject
+    const selectedSubject = subjectSelect?.value || "default";
 
     if (!selectedCourse) {
         alert("Please select a course.");
@@ -28,68 +31,69 @@ async function writeSessions() {
     }
     console.log("[Geo] Requesting one-time location for session creation...");
 
-try {
-    const latest = window.latestCoords;
+    try {
+        const latest = window.latestCoords;
 
-    if (!latest || latest.length !== 2) {
-        console.error("[Geo] No recent coordinates found. Aborting session creation.");
-        alert("We couldn't determine your location. Please ensure location services are enabled.");
-        return;
+        if (!latest || latest.length !== 2) {
+            console.error("[Geo] No recent coordinates found. Aborting session creation.");
+            alert("We couldn't determine your location. Please ensure location services are enabled.");
+            return;
+        }
+
+        const geolocation = {
+            latitude: latest[1],
+            longitude: latest[0]
+        };
+
+        console.log("[Geo] Using cached coordinates for session:", geolocation);
+
+        const baseUrl = window.location.origin;
+        console.log("[Debug] ownerName:", userName);
+        console.log("[Debug] ownerEmail:", userEmail);
+        console.log("[Debug] geolocation:", geolocation);
+        console.log("[Debug] session length:", selectedLength);
+        console.log("[Debug] selected course:", selectedCourse);
+        console.log("[Debug] program:", program);
+        console.log("[Debug] courses array:", courses);
+        console.log("[Debug] userId (for members):", userId);
+
+        const sessionRes = await fetch(`${baseUrl}/sessions`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ownerName: userName,
+                ownerEmail: userEmail,
+                geolocation,
+                length: selectedLength,
+                timestamp: new Date().toISOString(),
+                members: [userId],
+                program,
+                courses,
+                course: selectedCourse,
+                subject: selectedSubject
+            })
+        });
+        console.log("[POST] Session POST complete. Status:", sessionRes.status);
+
+        const data = await sessionRes.json();
+        console.log("[writeSessions] Session created:", data);
+        console.log("[PUT] Updating user document with session ID:", data._id);
+
+        // update student document with new session id
+        await fetch(`${baseUrl}/profile/student/${userId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ session: data._id })
+        });
+
+        window.location.reload();
+    } catch (err) {
+        console.error("[writeSessions] Failed to create session:", err);
     }
-
-    const geolocation = {
-        latitude: latest[1],
-        longitude: latest[0]
-    };
-
-    console.log("[Geo] Using cached coordinates for session:", geolocation);
-
-    const baseUrl = window.location.origin;
-    console.log("[Debug] ownerName:", userName);
-    console.log("[Debug] ownerEmail:", userEmail);
-    console.log("[Debug] geolocation:", geolocation);
-    console.log("[Debug] session length:", selectedLength);
-    console.log("[Debug] selected course:", selectedCourse);
-    console.log("[Debug] program:", program);
-    console.log("[Debug] courses array:", courses);
-    console.log("[Debug] userId (for members):", userId);
-
-    const sessionRes = await fetch(`${baseUrl}/sessions`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            ownerName: userName,
-            ownerEmail: userEmail,
-            geolocation,
-            length: selectedLength,
-            timestamp: new Date().toISOString(),
-            members: [userId],
-            program,
-            courses,
-            course: selectedCourse
-        })
-    });
-    console.log("[POST] Session POST complete. Status:", sessionRes.status);
-
-    const data = await sessionRes.json();
-    console.log("[writeSessions] Session created:", data);
-    console.log("[PUT] Updating user document with session ID:", data._id);
-
-    // update student document with new session id
-    await fetch(`${baseUrl}/profile/student/${userId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ session: data._id })
-    });
-
-    window.location.reload();
-} catch (err) {
-    console.error("[writeSessions] Failed to create session:", err);
-}
 }
 
 // ================================
