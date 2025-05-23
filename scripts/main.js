@@ -209,7 +209,8 @@ function addSessionPins(map, sessions) {
 
 function loadImageToMap(map, subject) {
     return new Promise((resolve, reject) => {
-        map.loadImage(`http://localhost:8000/images/${subject}_pin.png`, (error, image) => {
+        const baseUrl = window.location.origin;
+        map.loadImage(`${baseUrl}/images/${subject}_pin.png`, (error, image) => {
             if (error) return reject(error);
             map.addImage(`${subject}_pin`, image);
             resolve();
