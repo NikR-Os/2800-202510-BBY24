@@ -1,3 +1,5 @@
+window.latestCoords = null;
+
 function checkAuth() {
     const userId = sessionStorage.getItem('userId');
     const currentPage = window.location.pathname.split('/').pop();
@@ -89,10 +91,16 @@ function showMap() {
         // Use the geolocations "watchPosition" functionality.
         // ---------------------------------------------------------------------
         if (navigator.geolocation) {
+            console.log("[Geo] Starting watchPosition — continuous tracking initialized.");
+
             navigator.geolocation.watchPosition(
                 (position) => {
+                    console.log("[Geo] watchPosition update received:", position.coords);
+
                     try {
                         currentUserLocation = [position.coords.longitude, position.coords.latitude];
+                        window.latestCoords = currentUserLocation;
+
                         console.log("User moved to:", currentUserLocation);
 
                         // Defensive check to avoid crashing
@@ -504,8 +512,7 @@ function toggleForm() {
         }
     }
 }
-
-function toggleMotivationBar() {
+window.toggleMotivationBar = function () {
   const bar = document.getElementById("motivationBar");
   const computedDisplay = window.getComputedStyle(bar).display;
   const isBarVisible = computedDisplay !== "none";
@@ -520,7 +527,7 @@ function toggleMotivationBar() {
     bar.style.display = "flex";
     bar.classList.add("d-flex");
   }
-}
+};
 
 
 
@@ -564,6 +571,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 form.addEventListener("submit", (e) => {
                     e.preventDefault();
                     console.log("[Debug] Form submit triggered.");
+                    console.log("[FormSubmit] Calling writeSessions() now...");
+
                     writeSessions();
                     toggleForm();
                 });

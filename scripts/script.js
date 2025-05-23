@@ -1,69 +1,80 @@
 // Handle the sign up for students
-document.getElementById("student-signup-submit").addEventListener("click", async (e) => {
-  e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  const studentBtn = document.getElementById("student-signup-submit");
 
-  const name = document.getElementById("student-signup-name").value;
-  const email = document.getElementById("student-signup-email").value;
-  const password = document.getElementById("student-signup-password").value;
+  if (studentBtn) {
+    studentBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
 
-  try {
-    const res = await fetch("http://localhost:8000/signup?type=student", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await res.json();
+      const name = document.getElementById("student-signup-name").value;
+      const email = document.getElementById("student-signup-email").value;
+      const password = document.getElementById("student-signup-password").value;
 
-      if (res.ok) {
-        alert("Signup successful. Logging you in...");
-        sessionStorage.setItem("userId", data.userId);
-        sessionStorage.setItem('userRole', data.role);
-        sessionStorage.setItem('userName', data.name);
-        sessionStorage.setItem('email', data.email);
-        window.location.href = "main.html";
-      } else {
-        alert("Signup failed: " + data.message);
+      try {
+        const res = await fetch("http://localhost:8000/signup?type=student", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("Signup successful. Logging you in...");
+          sessionStorage.setItem("userId", data.userId);
+          sessionStorage.setItem("userRole", data.role);
+          sessionStorage.setItem("userName", data.name);
+          sessionStorage.setItem("email", data.email);
+          window.location.href = "main.html";
+        } else {
+          alert("Signup failed: " + data.message);
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
+        alert("Something went wrong during signup.");
       }
-  } catch (err) {
-    console.error("Signup error:", err);
-    alert("Something went wrong during signup.");
-  }
-});
+    }); //  closes studentBtn.addEventListener
+  } //  closes if (studentBtn)
+}); //  closes DOMContentLoaded
 
+// Handle the sign up for admins
+document.addEventListener("DOMContentLoaded", () => {
+  const adminBtn = document.getElementById("admin-signup-submit");
 
+  if (adminBtn) {
+    adminBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
 
-// Handles the sign up for admins 
-document.getElementById("admin-signup-submit").addEventListener("click", async (e) => {
-  e.preventDefault();
+      const name = document.getElementById("admin-signup-name").value;
+      const email = document.getElementById("admin-signup-email").value;
+      const password = document.getElementById("admin-signup-password").value;
 
-  const name = document.getElementById("admin-signup-name").value;
-  const email = document.getElementById("admin-signup-email").value;
-  const password = document.getElementById("admin-signup-password").value;
+      try {
+        const res = await fetch("http://localhost:8000/signup?type=admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
 
-  try {
-    const res = await fetch("http://localhost:8000/signup?type=admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("Signup successful. Logging you in...");
+          sessionStorage.setItem("userId", data.userId);
+          sessionStorage.setItem("userRole", data.role);
+          sessionStorage.setItem("userName", data.name);
+          window.location.href = "adminMain.html";
+        } else {
+          alert("Signup failed: " + data.message);
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
+        alert("Something went wrong during signup.");
+      }
     });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Signup successful. Logging you in...");
-      // Optionally auto-login after signup
-      sessionStorage.setItem("userId", data.userId);
-      sessionStorage.setItem('userRole', data.role);
-      sessionStorage.setItem('userName', data.name);
-      window.location.href = "adminMain.html";
-    } else {
-      alert("Signup failed: " + data.message);
-    }
-  } catch (err) {
-    console.error("Signup error:", err);
-    alert("Something went wrong during signup.");
   }
 });
+
 
 
 // Handle login
