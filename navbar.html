@@ -1,72 +1,86 @@
-<!-- Dark Overlay  -->
-<div class="overlay"></div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyNav Sidebar</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./styles/style_navbar.css" />
+  </head>
+  <body>
+    <!-- Dark Overlay  -->
+    <div class="overlay"></div>
 
-<!-- Navbar with Hamburger (Responsive) -->
-<nav class="navbar navbar-light bg-light sticky-top">
-  <div class="container-fluid">
-    <button class="navbar-toggler" type="button" id="sidebarToggle">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="d-flex align-items-center ms-2">
-      <img
-        src="./favicon/android-chrome-192x192.png"
-        alt="StudyNav Logo"
-        class="logo-img"
-        style="height: 30px"
-      />
-      <span class="navbar-brand mb-0">StudyNav</span>
-    </div>
-  </div>
-</nav>
-
-<!-- Sidebar -->
-<div id="sidebar">
-  <div class="sidebar-header">
-    <div class="d-flex align-items-center">
-      <img
-        src="./favicon/android-chrome-192x192.png"
-        alt="StudyNav Logo"
-        class="logo-img"
-      />
-      <span class="fs-5 fw-bold text-success">StudyNav</span>
-    </div>
-  </div>
-
-  <!-- Static Content -->
-  <div class="flex-grow-1 overflow-auto py-3" id="navContent">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a href="main.html" class="nav-link" data-link="home">
-          <i class="fas fa-home"></i>
-          Home
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/profile" class="nav-link" data-link="profile">
-          <i class="fas fa-user"></i>
-          Profile
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="setting.html" class="nav-link" data-link="settings">
-          <i class="fas fa-cog"></i>
-          Settings
-        </a>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Sidebar Footer -->
-  <div class="sidebar-footer p-3 border-top">
-    <div class="d-flex align-items-center justify-content-between">
-      <div class="ms-3">
-        <div class="fw-bold" id="usernameDisplay">Guest</div>
-        <small class="text-muted" id="userRoleDisplay">Visitor</small>
+    <!-- Navbar with Hamburger (Responsive) -->
+    <nav class="navbar navbar-light bg-light sticky-top">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" id="sidebarToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="d-flex align-items-center ms-2">
+          <img
+            src="./favicon/android-chrome-192x192.png"
+            alt="StudyNav Logo"
+            class="logo-img"
+            style="height: 30px"
+          />
+          <span class="navbar-brand mb-0">StudyNav</span>
+        </div>
       </div>
-      <button class="btn btn-sm btn-outline-danger" id="logoutButton">
-        <i class="fas fa-sign-out-alt"></i>
-      </button>
-    </div>
-  </div>
-</div>
+    </nav>
 
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <div class="d-flex align-items-center">
+          <img
+            src="./favicon/android-chrome-192x192.png"
+            alt="StudyNav Logo"
+            class="logo-img"
+          />
+          <span class="fs-5 fw-bold text-success">StudyNav</span>
+        </div>
+      </div>
+
+      <!-- Static Content -->
+      <div class="flex-grow-1 overflow-auto py-3" id="navContent">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a href="main.html" class="nav-link" data-link="home">
+              <i class="fas fa-home"></i>
+              Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/profile" class="nav-link" data-link="profile">
+              <i class="fas fa-user"></i>
+              Profile
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="setting.html" class="nav-link" data-link="settings">
+              <i class="fas fa-cog"></i>
+              Settings
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer p-3 border-top">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="ms-3">
+            <div class="fw-bold" id="usernameDisplay">Guest</div>
+            <small class="text-muted" id="userRoleDisplay">Visitor</small>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" id="logoutButton">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

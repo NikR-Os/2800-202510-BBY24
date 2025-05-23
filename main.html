@@ -43,7 +43,7 @@
 </head>
 
 <body>
-  
+
   <!------------------------------>
   <!-- Your HTML Layout go here -->
   <!------------------------------>
@@ -53,8 +53,9 @@
   <div id="navbarPlaceholder"></div>
 
   <!-- Flex row to hold session indicator and form side-by-side -->
-   
-  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5 mt-5" id="session-indicator-container">
+
+  <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-5 mt-5"
+    id="session-indicator-container">
 
     <!-- Enhanced session status display -->
     <div id="session-indicator-wrapper"
@@ -73,13 +74,14 @@
     <!-- Create Session button + popup form -->
 
     <div class="d-flex flex-column align-items-start gap-1" id="create-session"> <!--holds session and chat button-->
-      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()"><i class="fas fa-plus-circle me-2"></i>Create Session</button>
+      <button class="btn btn-sage  btn-sm  mb-0 w-100" onclick="toggleForm()"><i
+          class="fas fa-plus-circle me-2"></i>Create Session</button>
 
       <div id="sessionFormPopup" style="display: none;">
         <form id="sessionForm" class="border rounded p-3 bg-light">
           <h5>Create a Study Session</h5>
 
-          <label for="formGroupExampleInput" class="form-label">Session Description</label>
+          <label for="sessionFormInput" class="form-label">Session Description</label>
           <input type="text" class="form-control mb-3" id="sessionFormInput" placeholder="Describe your session"
             required>
 
@@ -118,7 +120,7 @@
           <div class="form-button-group">
             <button type="button" class="btn btn-danger" onclick="toggleForm()">Cancel</button>
             <button type="submit" class="btn btn-success">Submit Form</button>
-        </div>
+          </div>
         </form>
       </div>
 
@@ -145,8 +147,8 @@
           <label for="chatInput" class="form-label">Your Message</label>
           <input type="text" class="form-control mb-3" id="chatInput" placeholder="Type your message" required>
           <div class="form-button-group">
-              <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
-              <button type="submit" class="btn btn-success">Send</button>
+            <button type="button" class="btn btn-danger" onclick="toggleChatForm()">Cancel</button>
+            <button type="submit" class="btn btn-success">Send</button>
           </div>
 
           <ul id="chat-messages" class="mt-3 list-unstyled text-start"></ul>
@@ -155,115 +157,116 @@
     </div>
   </div>
 
-    <!-- Map Section -->
-  <section id="map-section" class="studynav-card mb-4">        
+  <!-- Map Section -->
+  <section id="map-section" class="studynav-card mb-4">
     <div class="card-header">
-          <h2><i class="fas fa-map-marked-alt me-2"></i>Campus Map</h2>
+      <h2><i class="fas fa-map-marked-alt me-2"></i>Campus Map</h2>
+    </div>
+    <div class="card-body p-0">
+      <div id="map-container">
+        <div id="map"></div>
+        <div id="location" class="map-location-label">
+          <i class="fas fa-location-dot me-2"></i>Detecting your location...
         </div>
-        <div class="card-body p-0">
-          <div id="map-container">
-            <div id="map"></div>
-            <div id="location" class="map-location-label">
-              <i class="fas fa-location-dot me-2"></i>Detecting your location...
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <div class="d-flex justify-content-between align-items-center">
-            <button id="recenter-button" class="btn btn-outline-primary">
-              <i class="fas fa-location-arrow me-2"></i>Recenter
-            </button>
-            <button id="enter-program-btn" class="btn btn-outline-success">
-              <i class="fas fa-plus-circle me-2"></i>Add Program
-            </button>
-          </div>
-          
-          <div id="program-code-form" class="program-code-form mt-3" style="display: none;">
-            <div class="input-group">
-              <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code">
-              <button id="submitProgramCodeBtn" class="btn btn-success">
-               Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- End of Map Section -->
- 
-
-    <!-- Motivation Section -->
-<section id="motivation-area" class="studynav-card">
-  <div class="card-header">
-    <h2><i class="fas fa-lightbulb me-2"></i>Study Motivation</h2>
-  </div>
-  <div class="card-body">
-    <button id="toggleMotivationBarBtn" class="btn" onclick="toggleMotivationBar()">
-    <i class="fas fa-magic me-2"></i>Get Inspired
-    </button>
-    
-    <div id="motivationBar" class="motivation-content" style="display: none;">
-      <div class="input-group mb-3">
-        <input type="text" id="topicInput" class="form-control" placeholder="Enter a topic (e.g., math)">
-        <button id="getMotivationBtn" class="btn btn-success">
-          <i class="fas fa-search me-2"></i>Search
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <button id="recenter-button" class="btn btn-outline-primary">
+          <i class="fas fa-location-arrow me-2"></i>Recenter
+        </button>
+        <button id="enter-program-btn" class="btn btn-outline-success">
+          <i class="fas fa-plus-circle me-2"></i>Add Program
         </button>
       </div>
-      
-      <div class="mt-4">
-        <p id="motivationText" class="motivation-quote">
-          <i class="fas fa-quote-left quote-icon"></i>
-          <span class="quote-text">Your motivational quote will appear here...</span>
-        </p>
+
+      <div id="program-code-form" class="program-code-form mt-3" style="display: none;">
+        <div class="input-group">
+          <input type="text" id="programCodeInput" class="form-control" placeholder="Enter program code">
+          <button id="submitProgramCodeBtn" class="btn btn-success">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End of Map Section -->
+
+
+  <!-- Motivation Section -->
+  <section id="motivation-area" class="studynav-card">
+    <div class="card-header">
+      <h2><i class="fas fa-lightbulb me-2"></i>Study Motivation</h2>
+    </div>
+    <div class="card-body">
+      <button id="toggleMotivationBarBtn" class="btn" onclick="toggleMotivationBar()">
+        <i class="fas fa-magic me-2"></i>Get Inspired
+      </button>
+
+      <div id="motivationBar" class="motivation-content" style="display: none;">
+        <div class="input-group mb-3">
+          <input type="text" id="topicInput" class="form-control" placeholder="Enter a topic (e.g., math)">
+          <button id="getMotivationBtn" class="btn btn-success">
+            <i class="fas fa-search me-2"></i>Search
+          </button>
+        </div>
+
+        <div class="mt-4">
+          <p id="motivationText" class="motivation-quote">
+            <i class="fas fa-quote-left quote-icon"></i>
+            <span class="quote-text">Your motivational quote will appear here...</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Directions -->
+  <div id="pop-menu" class="show" style="display: none;">
+    <div id="directions-panel" class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-directions me-2"></i>Directions</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="card-body">
+        <!-- Directions steps will be inserted here -->
+        <div class="step">
+        </div>
+        <!-- More steps would go here -->
+      </div>
+      <div class="card-footer">
+        <button class="action-btn primary">Close</button>
       </div>
     </div>
   </div>
-</section>
 
-      <!-- Directions -->
-     <div id="pop-menu" class="show" style="display: none;">
-    <div id="directions-panel" class="card">
-        <div class="card-header">
-            <h3><i class="fas fa-directions me-2"></i>Directions</h3>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="card-body">
-            <!-- Directions steps will be inserted here -->
-            <div class="step">
-            </div>
-            <!-- More steps would go here -->
-        </div>
-        <div class="card-footer">
-            <button class="action-btn primary">Close</button>
-        </div>
+
+  <footer class="mt-auto py-3 border-top">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
+      <div class="social-links">
+        <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
+      </div>
     </div>
-</div>
+  </footer>
 
+  <!---------------------------------------------->
+  <!-- Your own JavaScript functions go here    -->
+  <!---------------------------------------------->
 
-      <footer class="mt-auto py-3 border-top">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center">
-            <p class="mb-0 text-muted">&copy; 2025 StudyNav</p>
-            <div class="social-links">
-                <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
-              </div>
-        </div>
-      </footer>
-
-      <!---------------------------------------------->
-      <!-- Your own JavaScript functions go here    -->
-      <!---------------------------------------------->
-
-      <!-- Link to scripts of your own -->
-      <script src="./scripts/main.js"></script>
-      <script src="./scripts/script.js"></script>
-      <script src="./scripts/skeleton.js"></script>
-      <script src="./scripts/session.js"></script>
-      <script src="/socket.io/socket.io.js"></script>
-      <script src="./scripts/chatbox.js"></script>
-      <script src="./scripts/location.js"></script>
-      <script src="./scripts/program.js"></script>
-      <script src="./scripts/navbar.js"></script>
+  <!-- Link to scripts of your own -->
+  <script src="./scripts/main.js"></script>
+  <script src="./scripts/script.js"></script>
+  <script src="./scripts/skeleton.js"></script>
+  <script src="./scripts/session.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./scripts/chatbox.js"></script>
+  <script src="./scripts/location.js"></script>
+  <script src="./scripts/program.js"></script>
+  <script src="./scripts/navbar.js"></script>
 
 </body>
+
 </html>
